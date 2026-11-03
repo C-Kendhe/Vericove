@@ -1,0 +1,235 @@
+a dedicated Doctor Credential Verification System rather than simply asking doctors to upload their degrees and trusting the submitted documents.
+This is particularly important because your platform will allow doctors to:
+	• Create professional profiles.
+	• Participate in anonymous health discussions.
+	• Share medical information.
+	• Receive a verified professional badge.
+	• Potentially influence patients' healthcare decisions.
+A fake doctor or someone misrepresenting their qualifications could seriously undermine the platform's credibility.
+My recommendation is to introduce a proper verification workflow involving document submission, official registry checks and manual administrator approval.
+1. What exactly should we verify?
+We should separate a doctor's identity, professional registration, education and additional achievements.
+Verification category	What to verify
+Identity	Whether the applicant is the person submitting the application
+Medical registration	Valid registration with the relevant medical council
+Basic qualification	MBBS or applicable recognised primary qualification
+Postgraduate degree	MD, MS, DNB or other applicable qualification
+Specialisation	Whether the claimed speciality is supported by recognised qualifications
+Additional qualifications	Fellowships, diplomas and certifications
+Professional experience	Employment history and institutional affiliations
+Achievements	Publications, awards, research and professional contributions
+Important distinction: A doctor's identity being verified does not automatically mean their qualifications, specialisation or achievements have been verified. Each should have its own verification status.
+2. How to verify doctors in India
+Since your initial target appears to be India, I would use the following official verification sources.
+The first step is to identify the doctor's medical system. For an Indian allopathic doctor, the primary official sources are the National Medical Commission (NMC), National Medical Register (NMR) and relevant State Medical Council.
+
+
+
+
+
+
+The NMC's National Medical Register is particularly useful because its registration system also supports additional qualification registration. The NMR FAQ explains that doctors can apply to register additional qualifications after their primary registration. 
+
+NMC+1
+For other healthcare systems, do not use an MBBS/NMC verification workflow indiscriminately. For example, dental, nursing and AYUSH professionals have different regulatory frameworks. Your platform should have separate verification rules for each professional category.
+3. The verification workflow I recommend
+I would make the process a combination of automated checks and human verification.
+
+
+
+
+
+
+There should also be a status for pending verification. Doctors must not receive a verified badge simply because they submitted documents.
+4. How to verify each degree and qualification
+This is where the system needs to be particularly careful.
+Imagine a doctor submits:
+	• MBBS – XYZ Medical College.
+	• MD – General Medicine.
+	• Fellowship in Endocrinology.
+	• 12 years of experience.
+	• Published 15 research papers.
+	• Awarded Best Doctor Award in 2024.
+We should not verify all of these using one single document or badge.
+Instead, create a separate verification record for every claim.
+Claim	Verification method
+MBBS	Degree certificate + official registration records
+MD	Degree certificate + recognised qualification and institution checks
+Fellowship	Issuing institution and programme verification
+Specialisation	Relevant recognised qualification and registration records
+Work experience	Employer or institution confirmation
+Research publications	DOI, PubMed or publisher records
+Awards	Awarding organisation and official evidence
+Professional memberships	Membership issuer confirmation
+A. Degree verification
+For every submitted degree:
+	1. Doctor enters the qualification name.
+	2. Selects the awarding university or institution.
+	3. Enters graduation year.
+	4. Uploads the certificate.
+	5. Platform checks the qualification against applicable recognised qualification records.
+	6. Admin verifies the certificate and, where necessary, contacts the issuing institution.
+	7. The qualification receives an individual verification status.
+For additional qualifications, also check whether the doctor has registered them with the relevant council where applicable.
+B. University verification
+Do not rely only on the uploaded degree certificate.
+Use a combination of:
+	• Official university websites.
+	• University verification departments.
+	• Official academic verification services, where available.
+	• Direct confirmation from the institution.
+	• Relevant medical regulator qualification records.
+For suspicious or inconsistent documents, require additional evidence or direct institutional confirmation.
+C. Achievement verification
+Achievements should have their own verification process.
+For example:
+Achievement	How to verify
+Research publication	DOI and publisher record
+Research paper	PubMed or journal website
+Conference speaker	Official conference programme
+Medical award	Awarding organisation
+Fellowship	Issuing institution
+Professional membership	Professional organisation
+Hospital employment	Hospital or employer confirmation
+A publication appearing on PubMed can establish that a publication record exists, but it does not independently establish every authorship or professional claim. Those need appropriate checks too.
+5. The actual doctor onboarding interface
+I would create a separate professional registration experience.
+
+
+
+
+The process should be divided into five steps.
+
+
+
+The actual implementation would include secure document upload, server-side validation and application submission.
+
+
+6. Doctor profile: how verified qualifications should appear
+This is important because patients need to understand exactly what the platform has verified.
+
+
+Displaying credentials like this:
+
+
+
+Notice that the profile has multiple verification statuses instead of one universal verified badge.
+That is intentional.
+7. Admin verification dashboard
+Your platform also needs an internal dashboard where authorised administrators can review applications.
+
+
+Admin dashboard structure
+
+
+ADMIN PANEL
+│
+├── Overview
+│   ├── Total Doctor Applications
+│   ├── Pending Verification
+│   ├── Approved Doctors
+│   └── Rejected Applications
+│
+├── Doctor Applications
+│   ├── New Applications
+│   ├── Pending Review
+│   ├── Under Verification
+│   └── Completed
+│
+├── Individual Application
+│   ├── Identity Details
+│   ├── Registration Details
+│   ├── Official Registry Check
+│   ├── Degree Certificates
+│   ├── Additional Qualifications
+│   ├── Achievements
+│   └── Verification History
+│
+├── Verification Actions
+│   ├── Approve Claim
+│   ├── Request More Evidence
+│   ├── Reject Claim
+│   └── Escalate for Review
+│
+└── Verification Management
+    ├── Approved Professionals
+    ├── Suspended / Expired Registration
+    ├── Reverification Requests
+    └── Audit Logs
+
+
+
+An administrator should be able to open an application and verify each qualification independently.
+For example:
+Verification item	Status
+Identity	Verified
+Medical registration	Verified
+MBBS	Verified
+MD	Pending
+Fellowship	Needs evidence
+Research publications	Verified
+This is much more reliable than approving an entire profile based on one certificate.
+8. Technical implementation: how we actually build it
+For your development team, I recommend the following architecture.
+
+
+
+
+
+Suggested database structure
+Don't store all verification information in a single doctors table.
+Use separate entities:
+Table	Purpose
+users	Login and account details
+doctor_profiles	Professional profile
+professional_registrations	Council, number, validity and status
+qualifications	Degrees and educational history
+qualification_evidence	Uploaded certificates
+achievements	Awards, publications and memberships
+achievement_evidence	Supporting documents and references
+verification_checks	Verification results
+verification_audit_logs	Who checked what and when
+professional_badges	Publicly displayed verified statuses
+Each verification record should contain:
+	• Claim being verified.
+	• Evidence reference.
+	• Source of verification.
+	• Verification date.
+	• Reviewer.
+	• Result.
+	• Expiration or recheck date, if applicable.
+Important implementation consideration
+Do not assume that NMC or university databases provide a publicly accessible API for your application.
+For your first version, use manual official-registry checks and administrator review. If an authorised API or institutional integration becomes available, automate the relevant checks later.
+Also:
+	• Encrypt uploaded certificates.
+	• Restrict access to authorised verification personnel.
+	• Keep private identity documents separate from public profile data.
+	• Do not publicly display Aadhaar numbers or full registration documents.
+	• Record every administrative change.
+	• Provide a correction and appeal process.
+9. One more thing: continuous verification
+Doctor verification should not be a one-time event.
+Suppose a doctor is approved today, but their registration subsequently expires or is suspended.
+Your platform needs to account for that.
+I recommend these statuses:
+Status	Meaning
+Pending	Application submitted
+Under Review	Verification underway
+Verified	Required checks completed
+Partially Verified	Some qualifications remain unverified
+Action Required	Additional evidence needed
+Expired	Registration validity needs confirmation
+Suspended	Relevant regulatory suspension confirmed
+Rejected	Verification unsuccessful
+The system should periodically recheck professional registration and provide a mechanism for doctors to update their qualifications.
+
+
+	10. final recommendation
+Build three separate verification layers:
+
+
+This gives patients much greater transparency and prevents a single verified badge from creating an exaggerated impression of a doctor's credentials.
+One final architectural point: The same verification infrastructure should eventually support researchers too, with ORCID, institutional affiliations, publications and academic qualifications.
+That way, HERHEALTH has one reusable professional verification system rather than building completely separate systems for doctors and researchers.
+

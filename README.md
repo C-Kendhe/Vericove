@@ -1,44 +1,38 @@
 # Vericove
 
+Vericove is a responsive, browser-based prototype for the women's health, research and community ecosystem described in the project notes.
 
-### Listen. Understand. Connect.
+## Run locally
 
-**Vericove** is an AI-powered women's healthcare support and navigation platform designed to help women feel heard, understand their health experiences, and connect with appropriate healthcare professionals.
+Requirements: Node.js 18 or newer.
 
-## The Problem
+```powershell
+npm run dev
+```
 
-Women's health symptoms are frequently misunderstood, overlooked or dismissed. Many women lack the tools to track recurring symptoms, find supportive communities and access relevant healthcare professionals.
+Open [http://localhost:4173](http://localhost:4173). The first visit opens the sample patient workspace. Use the account menu to preview patient, doctor, researcher and public-explorer roles; sign out to see the public landing and authentication flow.
 
-## Our Solution
+## Current product areas
 
-Vericove combines AI-powered health insights, anonymous community support and verified healthcare professionals in one platform.
+- Public landing, sign-in, sign-up, password-reset and role-selection screens.
+- Patient dashboard, symptom journal, timeline, records, treatment notes and consultation-summary preview.
+- Provider directory with structured patient-experience context and anonymous review flow.
+- Research feed with publication status, source attribution and limitations; researcher matches and consent-aware enquiry drafts.
+- Anonymous community feed with communities, posts, helpful reactions, comments, saves, reports and guidelines.
+- Doctor/researcher profiles, credential verification draft and administration/moderation previews.
+- Responsive desktop sidebar and mobile bottom navigation.
 
-## Key Features
+## Prototype boundary
 
-- **AI Symptom Intelligence:** Organize symptoms and identify recurring patterns.
-- **Anonymous Community:** Connect with women sharing similar health experiences.
-- **Verified Doctor Discovery:** Find relevant healthcare professionals based on speciality and preferences.
-- **AI Health Reports:** Generate structured symptom histories for medical consultations.
-- **Community Safety:** Support safer and more respectful healthcare discussions.
+This is a front-end prototype. Accounts, role changes and sample records are browser-local and are not securely authenticated. There is no backend, encrypted health-record storage, email verification, official registry integration, external literature API, real AI inference, or server-side moderation yet. Do not enter real credentials or health information. No posts, reviews, enquiries or files are sent to other people or services.
 
-## Technology Stack
+The project documents specify production requirements for separate identity and health data, explicit/revocable sharing, verified professional claims, audit logs, encrypted records and qualified human review. Those require a backend and operational controls before this prototype can handle real users or health data.
 
-- Frontend: React.js
-- Backend: Python, FastAPI
-- Database: PostgreSQL
-- AI/ML: LLM APIs, Python, Scikit-learn, Sentence Transformers
+## Project structure
 
-## Project Structure
+- index.html and styles.css provide the responsive app shell and design system.
+- src/core.js holds local demo state and shared helpers.
+- src/views.js renders public, patient, professional, research, community and admin views.
+- src/interactions.js handles navigation, forms and local demo actions.
+- server.mjs serves the static app locally without a build step.
 
-- `frontend/` – User interface
-- `backend/` – Backend APIs
-- `ai/` – AI and ML components
-- `docs/` – Project documentation
-
-## Our Mission
-
-To empower women with the tools, support and connections they need to advocate for their health.
-
----
-
-*Built with care for HerHack 2026.*

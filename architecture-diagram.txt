@@ -1,0 +1,247 @@
+
+HERHEALTH – WOMEN'S HEALTH INTELLIGENCE PLATFORM
+│
+│
+├══════════════════════════════════════════════
+│  1. PUBLIC WEBSITE
+├══════════════════════════════════════════════
+│
+├── Landing Page
+├── About the Platform
+├── How It Works
+├── Explore Research
+├── Explore Community (Public Preview)
+├── Privacy & Ethics
+├── Contact / Support
+│
+│
+├══════════════════════════════════════════════
+│  2. AUTHENTICATION & ONBOARDING
+├══════════════════════════════════════════════
+│
+├── Sign Up
+├── Login
+├── Forgot Password
+├── Email Verification
+│
+└── Role Selection
+    │
+    ├── Patient
+    ├── Doctor
+    ├── Researcher
+    └── Public Explorer
+        │
+        ├── Profile Setup
+        ├── Privacy Preferences
+        └── Account Verification (where required)
+│
+│
+├══════════════════════════════════════════════
+│  3. CENTRAL DASHBOARD
+├══════════════════════════════════════════════
+│
+├── Personalised Overview
+├── Recent Activity
+├── Health Overview (Patient)
+├── Community Activity
+├── Research Recommendations
+├── Healthcare Recommendations
+├── Notifications
+└── Quick Actions
+│
+│
+├══════════════════════════════════════════════
+│  4. MODULE 01 – SYMPTOM INTELLIGENCE
+├══════════════════════════════════════════════
+│
+├── Health Overview
+│
+├── Symptom Journal
+│   ├── View Entries
+│   ├── Add Symptom
+│   ├── Edit Entry
+│   └── Symptom Categories
+│
+├── Health Timeline
+│   ├── Symptom History
+│   ├── Health Events
+│   └── Period Comparison
+│
+├── Medical Records
+│   ├── Upload Reports
+│   ├── View Documents
+│   ├── Prescriptions
+│   └── Test Results
+│
+├── Medication & Treatments
+│   ├── Medication History
+│   └── Treatment Responses
+│
+├── AI Health Intelligence
+│   ├── Pattern Explorer
+│   ├── Correlation Analysis
+│   ├── Timeline Analysis
+│   └── Health Summaries
+│
+└── Consultation Reports
+    ├── Generate Report
+    ├── Preview Report
+    └── Share / Export
+│
+│
+├══════════════════════════════════════════════
+│  5. MODULE 02 – HEALTHCARE PROVIDER DIRECTORY
+├══════════════════════════════════════════════
+│
+├── Find Doctors
+├── Search & Filters
+├── Doctor Profile
+├── Healthcare Experience Ratings
+├── Anonymous Patient Reviews
+├── Write a Review
+└── Saved Providers
+│
+│
+├══════════════════════════════════════════════
+│  6. MODULE 03 – RESEARCHER MATCHING
+├══════════════════════════════════════════════
+│
+├── Research Discovery
+├── Research Matches
+├── Researcher Profile
+├── Research Relevance Explanation
+├── Research Centre Discovery
+├── Clinical Study Discovery
+└── Research Enquiry
+    ├── AI-Generated Draft
+    ├── Edit Enquiry
+    ├── Consent & Approval
+    └── Send Enquiry
+│
+│
+├══════════════════════════════════════════════
+│  7. MODULE 04 – OPEN RESEARCH HUB
+├══════════════════════════════════════════════
+│
+├── Research Feed
+├── Explore Publications
+├── Research Categories
+├── Article Details
+├── Verified Researcher Profiles
+├── Research Collections
+├── Research Discussions
+├── Research Gap Explorer
+└── Research Updates
+│
+│
+├══════════════════════════════════════════════
+│  8. MODULE 05 – ANONYMOUS HEALTH COMMUNITY
+├══════════════════════════════════════════════
+│
+├── Community Home
+│   ├── Trending Discussions
+│   ├── Recent Discussions
+│   ├── Recommended Communities
+│   ├── Most Helpful Posts
+│   └── Followed Communities
+│
+├── Explore Communities
+│   ├── Condition-Based Communities
+│   ├── Symptom-Based Communities
+│   ├── Treatment Experience Groups
+│   └── General Health Discussions
+│
+├── Individual Community
+│   ├── Community Overview
+│   ├── Discussion Feed
+│   ├── Popular Posts
+│   ├── Questions
+│   └── Community Guidelines
+│
+├── Discussion System
+│   ├── Post Details
+│   ├── Comments
+│   ├── Nested Replies
+│   ├── Upvotes / Helpful
+│   ├── Save Post
+│   └── Report Post
+│
+├── Create Discussion
+│   ├── Ask a Question
+│   ├── Share Experience
+│   ├── Treatment Experience
+│   ├── Doctor Experience
+│   └── General Discussion
+│
+├── Anonymous Identity
+│   ├── Anonymous Member
+│   ├── Verified Doctor
+│   └── Verified Researcher
+│
+├── My Community
+│   ├── My Posts
+│   ├── My Comments
+│   ├── Saved Discussions
+│   └── Followed Communities
+│
+├── Notifications
+├── Moderation & Reporting
+└── Community Guidelines
+│
+│
+├══════════════════════════════════════════════
+│  9. PROFESSIONAL WORKSPACES
+├══════════════════════════════════════════════
+│
+├── DOCTOR WORKSPACE
+│   ├── Doctor Dashboard
+│   ├── Professional Profile
+│   ├── Patient-Shared Reports
+│   ├── Research Explorer
+│   ├── Research Collections
+│   ├── Community Participation
+│   └── Notifications
+│
+└── RESEARCHER WORKSPACE
+    ├── Researcher Dashboard
+    ├── Verified Profile
+    ├── My Publications
+    ├── Upload Research
+    ├── Research Management
+    ├── Research Discussions
+    ├── Collaboration Discovery
+    ├── Community Participation
+    └── Notifications
+│
+│
+├══════════════════════════════════════════════
+│  10. SHARED PLATFORM SERVICES
+├══════════════════════════════════════════════
+│
+├── Authentication & Role Management
+├── AI Intelligence Engine
+├── Medical Literature Search
+├── Researcher Matching Engine
+├── Universal Search
+├── Notification System
+├── Anonymous Identity Management
+├── Community Moderation Engine
+├── Medical Record Management
+├── Privacy & Consent Management
+└── Security & Audit Logs
+│
+│
+└══════════════════════════════════════════════
+   11. ADMINISTRATION
+══════════════════════════════════════════════
+    │
+    ├── Admin Dashboard
+    ├── User Management
+    ├── Doctor Verification
+    ├── Researcher Verification
+    ├── Community Moderation
+    ├── Review Moderation
+    ├── Research Moderation
+    ├── Reports & Complaints
+    ├── Content Management
+    └── Platform Analytics
