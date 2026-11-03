@@ -81,6 +81,8 @@ state.medications ||= [];
 state.publications ||= [];
 state.enquiries ||= [];
 state.posts ||= defaultState().posts;
+state.stories ||= [];
+state.communityView ||= 'FYP';
 state.savedPapers ||= [];
 state.reports ||= [];
 state.route ||= 'dashboard';
@@ -90,6 +92,6 @@ let toastTimer;
 export function toast(message){const node=$('#toast');node.textContent=message;node.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>node.classList.remove('show'),2500)}
 export const roleName = role => ({patient:'Patient',doctor:'Doctor',researcher:'Researcher',explorer:'Public explorer',admin:'Administrator'}[role]||'Patient');
 export const user = () => state.session || {name:'Guest',role:'explorer',handle:'Guest'};
-export const userAvatar = (who=user()) => `<span class="avatar ${esc(who.avatarTone||'')}">${esc(initials(who.name||who.handle||'A'))}</span>`;
+export const userAvatar = (who=user()) => {const crop=who.avatarCrop||{x:50,y:50,zoom:1};return `<span class="avatar ${esc(who.avatarTone||'')}">${who.avatar?`<img src="${esc(who.avatar)}" alt="" style="object-position:${Number(crop.x??50)}% ${Number(crop.y??50)}%;transform:scale(${Number(crop.zoom??1)})" />`:esc(initials(who.displayName||who.name||who.handle||'A'))}</span>`};
 export const fmtDate = raw => { if(!raw) return ''; try{return new Intl.DateTimeFormat('en',{month:'short',day:'numeric',year:'numeric'}).format(new Date(`${raw}T12:00:00`))}catch{return raw} };
 

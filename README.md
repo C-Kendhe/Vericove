@@ -15,7 +15,9 @@ Open [http://localhost:4173](http://localhost:4173). Signed-out visitors see the
 
 ## Current product areas
 
-- Public landing, sign-in, sign-up, password-reset and role-selection screens.
+- Public landing, sign-in and password-reset preview screens, plus a five-step account onboarding flow for individuals, doctors and researchers.
+- Profile identity setup with the 19 bundled `assets/PFPs/` images, custom avatar and cover previews, editable bios and interests, and profile visibility controls.
+- Social profile pages backed by the existing local community posts, with post editing, follow controls, follower counts, and a nonfunctional “Coming soon” messaging action.
 - Patient dashboard, symptom journal, timeline, records, treatment notes and consultation-summary preview.
 - Provider directory with structured patient-experience context and anonymous review flow.
 - Research feed with publication status, source attribution and limitations; researcher matches and consent-aware enquiry drafts.
@@ -26,7 +28,7 @@ Open [http://localhost:4173](http://localhost:4173). Signed-out visitors see the
 
 ## Prototype boundary
 
-This is a front-end prototype. Sign-in does not validate credentials with a server; session choice and sample records are stored in browser local storage and are not securely authenticated. There is no backend, encrypted health-record storage, email verification, official registry integration, external literature API, real AI inference, or server-side moderation yet. Do not enter real credentials or health information. No posts, reviews, enquiries or files are sent to other people or services.
+This is a front-end prototype. Sign-in does not validate credentials with a server; session choice, profiles, follows, posts and image previews are stored in browser local storage and are not securely authenticated. There is no backend, encrypted health-record storage, email verification or password reset service, official registry integration, secure credential-document upload, external literature API, real AI inference, or server-side moderation yet. Verification controls are interface previews only; submitting a form does not verify a professional. Do not enter real credentials or health information. No posts, reviews, enquiries or files are sent to other people or services.
 
 The project documents specify production requirements for separate identity and health data, explicit/revocable sharing, verified professional claims, audit logs, encrypted records and qualified human review. Those require a backend and operational controls before this prototype can handle real users or health data.
 
