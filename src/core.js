@@ -1,6 +1,6 @@
 export const $ = (selector, root = document) => root.querySelector(selector);
 export const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-const STORE = 'Vericove-demo-v1';
+const STORE = 'Vericove-demo-v2';
 const today = new Date();
 export const isoToday = today.toISOString().slice(0,10);
 export const dateLabel = new Intl.DateTimeFormat('en', { month:'short', day:'numeric' }).format(today);
@@ -40,7 +40,7 @@ export const svg = (name, size=17) => `<svg width="${size}" height="${size}" vie
 export const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const initials = name => String(name||'A').split(/\s+/).slice(0,2).map(part=>part[0]?.toUpperCase()||'').join('');
 const defaultState = () => ({
-  session:{loggedIn:true,demo:true,name:'Alex Morgan',email:'alex@example.com',role:'patient',handle:'QuietRiver',avatarTone:''},
+  session:{loggedIn:false,demo:true,name:'',email:'',role:'patient',handle:'QuietRiver',avatarTone:''},
   route:'dashboard',
   entries:[
     {id:1,symptom:'Pelvic discomfort',date:isoToday,time:'9:20 AM',severity:'Moderate',duration:'About 2 hours',note:'More noticeable after a restless night.'},
@@ -71,6 +71,7 @@ const defaultState = () => ({
   profile:{location:'Boston, MA',specialty:'',privacy:true}
 });
 export let state;
+export const sessionMedia = new Map();
 try { state = {...defaultState(), ...JSON.parse(localStorage.getItem(STORE)||'{}')}; }
 catch { state=defaultState(); }
 state.session ||= defaultState().session;

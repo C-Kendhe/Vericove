@@ -4,13 +4,14 @@ Vericove is a responsive, browser-based prototype for the women's health, resear
 
 ## Run locally
 
-Requirements: Node.js 18 or newer.
+Requirements: Node.js 20.19+ or 22.12+ and npm.
 
 ```powershell
+npm install
 npm run dev
 ```
 
-Open [http://localhost:4173](http://localhost:4173). The first visit opens the sample patient workspace. Use the account menu to preview patient, doctor, researcher and public-explorer roles; sign out to see the public landing and authentication flow.
+Open [http://localhost:4173](http://localhost:4173). Signed-out visitors see the public homepage first. Choose **Log in** or **Get started** to continue; the sign-in screen lets you preview the patient, doctor, researcher or public-explorer workspace. A successful demo sign-in is remembered in this browser, so the next visit opens that workspace. Sign out to return to the public homepage.
 
 ## Current product areas
 
@@ -20,11 +21,12 @@ Open [http://localhost:4173](http://localhost:4173). The first visit opens the s
 - Research feed with publication status, source attribution and limitations; researcher matches and consent-aware enquiry drafts.
 - Anonymous community feed with communities, posts, helpful reactions, comments, saves, reports and guidelines.
 - Doctor/researcher profiles, credential verification draft and administration/moderation previews.
-- Responsive desktop sidebar and mobile bottom navigation.
+- Responsive floating desktop navigation and mobile bottom navigation.
+- Role selection during sign-in and browser-local remembered demo sessions.
 
 ## Prototype boundary
 
-This is a front-end prototype. Accounts, role changes and sample records are browser-local and are not securely authenticated. There is no backend, encrypted health-record storage, email verification, official registry integration, external literature API, real AI inference, or server-side moderation yet. Do not enter real credentials or health information. No posts, reviews, enquiries or files are sent to other people or services.
+This is a front-end prototype. Sign-in does not validate credentials with a server; session choice and sample records are stored in browser local storage and are not securely authenticated. There is no backend, encrypted health-record storage, email verification, official registry integration, external literature API, real AI inference, or server-side moderation yet. Do not enter real credentials or health information. No posts, reviews, enquiries or files are sent to other people or services.
 
 The project documents specify production requirements for separate identity and health data, explicit/revocable sharing, verified professional claims, audit logs, encrypted records and qualified human review. Those require a backend and operational controls before this prototype can handle real users or health data.
 
@@ -34,5 +36,5 @@ The project documents specify production requirements for separate identity and 
 - src/core.js holds local demo state and shared helpers.
 - src/views.js renders public, patient, professional, research, community and admin views.
 - src/interactions.js handles navigation, forms and local demo actions.
-- server.mjs serves the static app locally without a build step.
+- server.mjs runs the Vite development server; `npm run build` creates the production bundle.
 
