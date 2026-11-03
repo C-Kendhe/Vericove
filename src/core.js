@@ -4,6 +4,8 @@ const STORE = 'Vericove-demo-v2';
 const today = new Date();
 export const isoToday = today.toISOString().slice(0,10);
 export const dateLabel = new Intl.DateTimeFormat('en', { month:'short', day:'numeric' }).format(today);
+// No source-backed research records are configured in this local preview yet.
+export const researchPapers = [];
 const iconPaths = {
   grid:'<rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/>',
   heart:'<path d="M20.8 8.5c0 5.2-8.8 11-8.8 11s-8.8-5.8-8.8-11A4.7 4.7 0 0 1 12 6a4.7 4.7 0 0 1 8.8 2.5Z"/><path d="M7.5 12h2l1.2-2.5 2.1 5 1.4-2.5H17"/>',

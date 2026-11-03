@@ -1,4 +1,4 @@
-import { $, $$, isoToday, state, persist, toast, roleName, user, userAvatar, svg, esc, fmtDate, sessionMedia } from './core.js';
+import { $, $$, isoToday, researchPapers, state, persist, toast, roleName, user, userAvatar, svg, esc, fmtDate, sessionMedia } from './core.js';
 import { render, go, view, auth, avatarAssets, renderCommunityFeed } from './views.js';
 import { openModal, closeModal, pressButton, releaseButton } from './motion.js';
 
