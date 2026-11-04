@@ -39,6 +39,13 @@ const iconPaths = {
   upload:'<path d="M12 16V4m-4 4 4-4 4 4"/><path d="M4 16v4h16v-4"/>',
   arrow:'<path d="M5 12h14m-6-6 6 6-6 6"/>',
   play:'<path d="m8 5 12 7-12 7V5Z" fill="currentColor" stroke="none"/>',
+  pause:'<path d="M8 5v14M16 5v14"/>',
+  volume:'<path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>',
+  volumeOff:'<path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="m16 9 5 6m0-6-5 6"/>',
+  phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 3.2a2 2 0 0 1-.6 1.7L7.2 10.4a16 16 0 0 0 6.4 6.4l1.8-1.8a2 2 0 0 1 1.7-.6l3.2.5a2 2 0 0 1 1.7 2Z"/>',
+  video:'<rect x="3" y="6" width="13" height="12" rx="3"/><path d="m16 10 5-3v10l-5-3"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>',
 };
 export const svg = (name, size=17) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${iconPaths[name]||iconPaths.spark}</svg>`;
 export const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -77,6 +84,9 @@ const defaultState = () => ({
   reviews:[],
   reports:[],
   notifications:[{title:'A new discussion in Endometriosis support',time:'1 hr ago',read:false},{title:'New research in a topic you follow',time:'Yesterday',read:false}],
+  notificationSettings:{messages:true,community:true,productUpdates:false},
+  viewedSampleStories:[],
+  storyLikes:[],
   consent:{researchMatching:false,sharedReports:false},
   profile:{location:'Boston, MA',specialty:'',privacy:true}
 });

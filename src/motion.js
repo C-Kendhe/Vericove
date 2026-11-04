@@ -19,7 +19,9 @@ export function openModal(root, variant = '') {
   if (!panel) return;
   const keyframes = variant === 'comments-sheet'
     ? { opacity: [0, 1], x: [24, 0] }
-    : { opacity: [0, 1], y: [22, 0] };
+    : variant === 'explore-detail-sheet'
+      ? { opacity: [0, 1], scale: [.975, 1], y: [12, 0] }
+      : { opacity: [0, 1], y: [22, 0] };
   animate(panel, keyframes, { type: 'spring', stiffness: 360, damping: 34 });
 }
 
@@ -29,7 +31,8 @@ export function closeModal(root, done) {
   const panel = root.querySelector('.modal');
   if (!panel) return done?.();
   const isDrawer = panel.classList.contains('comments-sheet');
-  const animation = animate(panel, isDrawer ? { opacity: 0, x: 24 } : { opacity: 0, y: 18 }, { duration: 0.16, ease: 'easeIn' });
+  const isExploreViewer = panel.classList.contains('explore-detail-sheet');
+  const animation = animate(panel, isDrawer ? { opacity: 0, x: 24 } : isExploreViewer ? { opacity: 0, scale: .985, y: 10 } : { opacity: 0, y: 18 }, { duration: 0.16, ease: 'easeIn' });
   animate(root, { opacity: 0 }, { duration: 0.16, ease: 'easeIn' });
   animation.finished.then(() => done?.());
 }
