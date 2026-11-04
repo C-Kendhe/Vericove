@@ -1,0 +1,471 @@
+# Vericove — Complete MVP Architecture & AI Research Intelligence Implementation
+
+Act as a senior full-stack architect and AI engineer. Your task is to audit, plan and implement the backend architecture and AI research intelligence system for **Vericove**, an India-first women's health and social platform.
+
+The objective is to build a scalable, secure and maintainable MVP without unnecessary infrastructure complexity or rewriting existing working features.
+
+## 1. FIRST: AUDIT THE EXISTING PROJECT
+
+Before writing or modifying code:
+
+1. Inspect the complete repository structure.
+2. Identify the existing frontend framework, programming languages, dependencies, routing, state management and styling system.
+3. Identify the current backend, database, authentication, storage and API integrations.
+4. Inspect existing modules for Community, Profiles, Health, Research, Posts, Messages and other implemented features.
+5. Identify incomplete features, duplicated functionality, architectural issues and missing infrastructure.
+6. Check existing environment variables and configuration without exposing secrets.
+7. Identify which components can be reused and which genuinely need implementation.
+
+Create an architecture overview documenting:
+- Existing technology stack.
+- Current application structure.
+- Existing database schema.
+- Existing API endpoints.
+- Existing authentication and permissions.
+- Missing components.
+- Recommended changes.
+
+**Critical:** Preserve the existing frontend framework, design system, routes and working functionality. Do not rebuild the application from scratch or replace working infrastructure without a strong technical reason.
+
+After the audit, create an implementation plan based on the actual repository.
+
+## 2. RECOMMENDED SYSTEM ARCHITECTURE
+
+Use a **modular monolith with a separate AI research service**.
+
+The platform should consist of three logically separated systems sharing authentication and the overall user experience.
+
+### A. Social Platform
+- Social feed and posts.
+- Stories and Reels.
+- Likes, comments, saves and shares.
+- User profiles and follows.
+- Direct messages.
+- Notifications.
+- Reddit-inspired `w/` communities.
+- Community discussions and moderation.
+
+### B. Health Platform
+- Personal health journal.
+- User-controlled health entries.
+- Health education.
+- Verified healthcare professional profiles.
+- Private health-related records and documents.
+
+### C. Research Intelligence
+- Online biomedical research discovery.
+- Approved document library.
+- PDF processing and indexing.
+- Keyword and semantic search.
+- Evidence retrieval and reranking.
+- AI-generated research explanations.
+- Source citations and limitations.
+
+Keep data access logically separated. Public social content must never automatically become trusted medical evidence.
+
+## 3. TECHNOLOGY STACK
+
+Prefer the following architecture unless the existing project has a compelling reason to use something different.
+
+**Core backend**
+- Supabase.
+- PostgreSQL.
+- Supabase Auth.
+- Supabase Storage.
+- Supabase Realtime.
+- PostgreSQL Row Level Security.
+
+**Search**
+- PostgreSQL full-text search.
+- pgvector for vector embeddings.
+- Hybrid keyword and semantic retrieval.
+
+**AI service**
+- Python.
+- FastAPI.
+- An LLM API behind a provider-independent adapter.
+- An embedding API or evaluated open-source embedding model.
+- PyMuPDF or equivalent for PDF processing.
+
+**Online research**
+- NCBI E-utilities.
+- PubMed.
+- Permitted PMC full-text retrieval.
+- Approved WHO publications and Cochrane resources where access and reuse conditions permit.
+
+Do not introduce MongoDB, Firebase, Pinecone, Weaviate or another separate vector database unless a concrete requirement justifies it.
+
+Keep secrets server-side. Never expose API keys, service-role credentials or privileged database access in frontend code.
+
+## 4. BUILD VERICOVE INTELLIGENCE
+
+Create a unified AI feature called **Vericove Intelligence**, with two distinct modes sharing the same underlying research retrieval infrastructure.
+
+### Mode 1: Health Education
+
+Purpose: Explain women's health topics in accessible, understandable language.
+
+Example questions:
+- What is PCOS?
+- How does the menstrual cycle work?
+- What is endometriosis?
+- What does hormonal health mean?
+- What are common misconceptions about reproductive health?
+
+Requirements:
+- Use reviewed educational resources.
+- Explain medical terminology in simple language.
+- Include trustworthy references.
+- Distinguish established knowledge from uncertainty.
+- Avoid unsupported medical claims.
+
+### Mode 2: Research Intelligence
+
+Purpose: Help users discover, understand and explore scientific research.
+
+Accept:
+- Research questions.
+- Health topics.
+- Conditions users want to understand.
+- Symptom-related research questions.
+
+The system should search relevant online research and approved internal documents, then generate accessible explanations grounded in retrieved sources.
+
+For each answer, provide:
+- Research overview.
+- Relevant studies and publications.
+- Actual findings supported by retrieved evidence.
+- Study type where available.
+- Publication details.
+- Evidence limitations.
+- Original source links.
+- Traceable citations.
+
+For symptom-related questions, explain what researchers have investigated. Never infer that a user has a particular condition or generate a personalized diagnosis, disease prediction, risk score or treatment plan.
+
+Clearly communicate that research information is educational and is not a personal diagnosis.
+
+### Suggested interface
+
+Title: Vericove Intelligence
+
+Subtitle: Understand your health. Explore the science behind it.
+
+Two selectable modes:
+- Health Education.
+- Research Intelligence.
+
+Include:
+- Search/question input.
+- Relevant suggested questions.
+- Clear mode indicator.
+- Privacy notice.
+- Answer area.
+- Expandable citations.
+- Research source cards.
+- Evidence limitations.
+- Feedback controls.
+- Optional saved research history.
+
+Follow the existing Vericove design system. Do not create an unrelated visual style or unnecessary dashboard.
+
+## 5. RESEARCH SOURCES AND DOCUMENT INGESTION
+
+Support two research sources:
+
+### Online sources
+- PubMed metadata and abstracts.
+- Eligible PMC full-text articles.
+- Approved WHO publications.
+- Relevant Cochrane evidence summaries.
+
+Use official APIs and permitted retrieval methods. Respect article licences, copyright, rate limits and source terms. Do not assume every PMC article can be downloaded or reused.
+
+### Internal document library
+
+Allow authorized researchers or administrators to upload approved PDFs and documents.
+
+Implement this ingestion pipeline:
+
+1. Receive an eligible online source or authorized upload.
+2. Validate file type, size and upload permissions.
+3. Extract text using a PDF processing library.
+4. Preserve document headings and page references wherever possible.
+5. Extract and validate metadata.
+6. Split content into meaningful sections.
+7. Generate embeddings.
+8. Store document sections and embeddings in PostgreSQL.
+9. Index content for keyword and semantic retrieval.
+10. Detect duplicates and extraction failures.
+11. Apply document approval and access permissions.
+
+Store metadata such as:
+- Document title.
+- Authors.
+- Journal or publisher.
+- Publication date.
+- DOI or PMID.
+- Original URL.
+- Licence.
+- Document type.
+- Uploading user or source.
+- Review status.
+- Version and expiry information.
+
+Document statuses:
+- Pending review.
+- Approved for search.
+- Rejected.
+- Expired or superseded.
+
+Only approved documents should enter the trusted internal research retrieval corpus.
+
+Do not automatically trust user-generated posts or unreviewed uploads as medical evidence.
+
+## 6. RESEARCH RETRIEVAL AND ANSWER GENERATION
+
+Implement a grounded retrieval-augmented generation pipeline.
+
+Expected flow:
+
+1. Receive the user's question and selected AI mode.
+2. Identify topic and search intent.
+3. Search relevant online research sources where appropriate.
+4. Search approved internal documents.
+5. Use PostgreSQL full-text search and pgvector semantic search.
+6. Merge and rank results.
+7. Rerank relevant sections where appropriate.
+8. Deduplicate overlapping sources.
+9. Enforce document-level and user-level access permissions.
+10. Pass only the selected authorized evidence to the LLM.
+11. Generate a structured, evidence-grounded explanation.
+12. Validate citations against retrieved source records.
+13. Return the answer with original source links and limitations.
+
+### Citation integrity
+
+This is a critical requirement.
+
+- Never fabricate papers, authors, publication dates, DOIs or findings.
+- Every citation must map to a real retrieved source.
+- Preserve original URLs and identifiers.
+- Distinguish abstracts from full-text evidence.
+- Clearly indicate when evidence is insufficient.
+- Do not present preliminary findings as established medical consensus.
+- Include relevant study limitations.
+
+When retrieval fails or evidence is insufficient, the AI should say so instead of inventing an answer.
+
+## 7. DATABASE DESIGN
+
+Audit the existing schema before creating new tables. Reuse existing tables wherever possible.
+
+Suggested core application entities:
+
+**Social platform**
+- profiles
+- accounts
+- posts
+- post_media
+- post_votes
+- post_saves
+- stories
+- story_views
+- follows
+- conversations
+- conversation_members
+- messages
+- communities
+- community_members
+- community_rules
+- community_posts
+- comments
+- comment_votes
+- notifications
+- reports
+
+**Health and research**
+- health_entries
+- research_sources
+- research_documents
+- research_chunks
+- research_embeddings
+- research_topics
+- research_queries
+- research_responses
+- research_feedback
+
+Use appropriate:
+- Primary and foreign keys.
+- Unique constraints.
+- Indexes.
+- Timestamps.
+- Document versioning.
+- Ownership fields.
+- Permission metadata.
+- Referential integrity.
+
+Use proper relational design. Avoid creating duplicate tables or storing unnecessary copies of data.
+
+Keep private health records and research history separate from public social content.
+
+## 8. SECURITY AND PRIVACY
+
+Security must be part of the architecture, not something added at the end.
+
+Implement Supabase Row Level Security and backend authorization for:
+
+- Private health records.
+- User-owned documents.
+- Private messages.
+- Private conversations.
+- Restricted research documents.
+- Saved AI history.
+- Research uploads and administrative actions.
+
+Requirements:
+- Users can access only records they are authorized to access.
+- Researchers cannot automatically access private user health records.
+- The LLM must receive only specifically authorized research excerpts.
+- Never expose service-role keys or privileged credentials.
+- Validate and sanitize inputs and uploaded documents.
+- Apply upload limits and appropriate file validation.
+- Protect AI endpoints against abuse and excessive usage.
+- Avoid logging raw symptom descriptions or sensitive health information.
+- Do not use private health entries for model training.
+- Make saved AI history optional and provide deletion controls.
+- Keep public profile information separate from sensitive health data.
+
+For an India-first launch, account for applicable DPDP requirements, including age-related obligations. Obtain qualified Indian legal and regulatory guidance before deploying features that process minors' personal data or provide patient-specific medical functionality.
+
+## 9. HEALTH AI SAFETY
+
+Keep the initial product focused on education and research explanations.
+
+Do not implement:
+- Automated diagnosis.
+- Disease prediction from symptoms.
+- Personalized medical risk scores.
+- Treatment prescriptions.
+- Medication recommendations.
+- Autonomous clinical decision-making.
+
+Use clear distinctions between:
+- General educational information.
+- Published research findings.
+- Community opinions.
+- Personal medical advice.
+
+Do not allow the AI to present community discussions as verified medical evidence.
+
+Have qualified healthcare professionals review health education content and safety-related messaging before release.
+
+## 10. IMPLEMENTATION ROADMAP
+
+Work in the following order, adapting the schedule to the actual project.
+
+**Phase 1 — Project foundation**
+- Complete repository audit.
+- Document architecture.
+- Review Supabase configuration.
+- Design necessary migrations.
+- Configure private document storage.
+- Set up FastAPI service.
+
+**Phase 2 — Research library**
+- Implement document upload and validation.
+- Build PDF extraction.
+- Extract and store metadata.
+- Implement chunking and embeddings.
+- Build document approval workflow.
+
+**Phase 3 — Research retrieval**
+- Integrate PubMed.
+- Integrate permitted PMC retrieval.
+- Implement full-text search.
+- Implement vector search.
+- Build hybrid retrieval and reranking.
+- Add permission filtering.
+
+**Phase 4 — AI intelligence**
+- Integrate the LLM API.
+- Implement Health Education mode.
+- Implement Research Intelligence mode.
+- Add grounded generation.
+- Add citation validation.
+- Handle insufficient evidence and errors.
+
+**Phase 5 — Frontend integration and validation**
+- Integrate the two modes into the existing frontend.
+- Build research result and citation interfaces.
+- Add optional saved history.
+- Add feedback.
+- Test authorization and privacy boundaries.
+- Evaluate answer quality and citation accuracy.
+- Obtain appropriate clinical review.
+
+## 11. TESTING AND QUALITY REQUIREMENTS
+
+Create tests for:
+
+**Backend**
+- Authentication.
+- Database operations.
+- API validation.
+- Document upload.
+- PDF extraction.
+- Search and retrieval.
+- Citation mapping.
+- Permission enforcement.
+- Deletion workflows.
+
+**AI**
+- Retrieval relevance.
+- Citation accuracy.
+- Groundedness.
+- Unsupported questions.
+- Insufficient evidence.
+- Outdated or conflicting sources.
+- Mode-specific response behavior.
+- Attempts to obtain diagnosis or treatment instructions.
+
+**Security**
+- Cross-user data access.
+- Unauthorized document retrieval.
+- Private message access.
+- Health record isolation.
+- Storage permissions.
+- API key exposure.
+
+Do not mark a feature complete simply because its interface exists. It must work with real backend data and appropriate error handling.
+
+## 12. DEVELOPMENT RULES
+
+Follow these rules throughout implementation:
+
+1. Audit before coding.
+2. Preserve existing working features.
+3. Reuse existing components and infrastructure.
+4. Avoid unnecessary dependencies.
+5. Use database migrations for schema changes.
+6. Keep AI logic isolated in the FastAPI service.
+7. Keep credentials and privileged operations server-side.
+8. Use environment variables and provide an `.env.example` without secrets.
+9. Add clear API contracts and documentation.
+10. Implement proper loading, error and empty states.
+11. Do not fabricate users, research papers, citations or engagement metrics.
+12. Do not leave critical controls as non-functional placeholders.
+13. Make incremental, testable changes.
+14. Document setup, deployment and maintenance.
+
+## FINAL OBJECTIVE
+
+Deliver a working Vericove MVP architecture that combines:
+
+- A social platform.
+- A private health platform.
+- An AI-powered research intelligence system.
+
+All three should integrate naturally into the existing Vericove application while maintaining strict data separation, secure permissions, trustworthy research retrieval and a polished user experience.
+
+**Start by auditing the existing repository. Present the findings, current architecture, identified gaps and proposed implementation plan before making major changes. Then implement incrementally, validating each phase against the existing project.**

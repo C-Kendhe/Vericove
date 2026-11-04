@@ -1,0 +1,42 @@
+{
+  "motionIntensity": 3,
+  "dominantEngine": "CSS transitions",
+  "secondaryEngine": "Motion One (existing)",
+  "specialSections": 0,
+  "webglCanvases": 0,
+  "continuousAnimations": 0,
+  "sections": [
+    {
+      "id": "community-shell",
+      "renderMode": "dom-motion",
+      "engine": "CSS transforms and opacity",
+      "assetType": "DOM and SVG icons",
+      "containerRatio": "responsive",
+      "assetRatio": "none",
+      "fit": "none",
+      "objectPosition": "center",
+      "safeArea": "top and bottom safe areas; dock above device inset",
+      "initialScale": 1,
+      "maxScale": 1,
+      "trigger": "route change, hover, press",
+      "backgroundStrategy": "warm ivory canvas with opaque readable content surfaces",
+      "reducedMotion": "disable nonessential transitions and entrance movement"
+    },
+    {
+      "id": "stories-and-media",
+      "renderMode": "framed-media-stage",
+      "engine": "native media controls and CSS transitions",
+      "assetType": "user-selected image or video",
+      "containerRatio": "responsive",
+      "assetRatio": "source media ratio",
+      "fit": "contain for video controls, cover for still previews",
+      "objectPosition": "center",
+      "safeArea": "keep close and playback controls in reach",
+      "initialScale": 1,
+      "maxScale": 1,
+      "trigger": "open, playback, selection",
+      "backgroundStrategy": "neutral charcoal behind active video",
+      "reducedMotion": "no autoplay or motion-dependent navigation"
+    }
+  ]
+}

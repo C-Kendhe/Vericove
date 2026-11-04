@@ -1,5 +1,6 @@
 import { $, $$, dateLabel, isoToday, researchPapers, state, persist, app, toast, roleName, user, userAvatar, svg, esc, fmtDate, sessionMedia } from './core.js';
 import { enterPage, animateSelection } from './motion.js';
+import { communityPage as communityApplicationPage } from './community.js';
 const navGroups = [
   {label:'Workspace', items:[['dashboard','Home','grid'],['my-health','My health','heart'],['community','Community','chat'],['discover','Discover','spark']]},
   {label:'Account', items:[['profile','Profile','user']]},
@@ -74,6 +75,11 @@ function settingsPage(){const privacy=user().privacy||{};return `${pageHeading('
 
 function emptyState(title,body,action=''){return `<div class="empty-state"><strong>${esc(title)}</strong><p>${esc(body)}</p>${action}</div>`}
 function renderWorkspace(){
+  if(state.route==='community'){
+    app.innerHTML=communityApplicationPage();
+    renderWorkspace.lastRoute=state.route;
+    return;
+  }
   const previousRoute=renderWorkspace.lastRoute;
   const routes={'dashboard':dashboard,'my-health':journalPage,'timeline':timelinePage,'records':recordsPage,'medications':medicationsPage,'reports':reportsPage,'community':communityPage,'discover':discoverPage,'research':researchPage,'matches':matchesPage,'care':carePage,'profile':profilePage,'professional':professionalPage,'verification':verificationPage,'admin':adminPage,'moderation':moderationPage,'notifications':notificationsPage,'settings':settingsPage};
   const pageContent=(routes[state.route]||dashboard)();
@@ -126,7 +132,7 @@ function authPage(){const isSignup=auth.mode==='signup';const role=auth.draft.ro
   const progress=isSignup?`<div class="onboard-progress"><div class="progress-track"><i style="width:${step*20}%"></i></div><div class="progress-label"><span>STEP ${step} OF 5</span><span>${stepNames[step-1]}</span></div></div>`:'';const footer=isSignup?`<div class="onboard-actions">${step>1?'<button class="btn ghost" data-action="onboard-back">Back</button>':'<span></span>'}${step<5?`<button class="btn primary" data-action="onboard-next">${step===2?'Continue as '+(role==='patient'?'Individual':role[0].toUpperCase()+role.slice(1)):'Continue'} ${svg('arrow',13)}</button>`:`<button class="btn primary" data-action="complete-signup">Create my Vericove profile ${svg('arrow',13)}</button>`}</div>`:'';
   app.innerHTML=`<main class="auth-shell ${isSignup?'onboarding-shell':''}"><section class="auth-art"><a class="brand" href="#" data-view="landing"><span class="brand-mark">${svg('heart',19)}</span><span class="brand-word">Vericove<small>UNDERSTAND · CARE · THRIVE</small></span></a><div class="auth-art-copy"><div class="overline">A quieter kind of health space</div><h1>Come as you are.<br>Make it your own.</h1><p>A place to understand your health, meet thoughtful people and follow the questions that matter to you.</p><div class="auth-art-orbit"><span>Care</span><i>✳</i><span>Community</span><i>♡</i><span>Research</span></div><div class="auth-quote">“Your experience deserves room to unfold.”<small>A reminder from Vericove</small></div></div><div class="auth-art-footer">A thoughtful space for health, community and research.</div></section><section class="auth-panel"><div class="auth-box"><div class="auth-topline">${isSignup?'Already have an account?':'New to Vericove?'} <button data-view="${isSignup?'login':'signup'}">${isSignup?'Sign in':'Create account'}</button></div>${progress}<h2>${title}</h2><p class="auth-intro">${intro}</p>${form}${footer}${!isSignup?`<div class="auth-notice">Prototype mode: sign-in is not checked by a server. Your demo workspace is remembered on this device. Do not enter real credentials or health information.</div>`:''}</div></section></main>`;}
 
-export function render(){document.title=`${routeTitles[state.route]||'Vericove'} — Vericove`;if(!state.session?.loggedIn){if(auth.mode==='landing')landing();else authPage();return;}renderWorkspace();}
-export function go(route){state.route=route;persist();render();window.scrollTo({top:0,behavior:'smooth'});}
+export function render(){if(auth.mode==='landing'){document.title='Vericove — A thoughtful space for women’s health';landing();return;}document.title=`${routeTitles[state.route]||'Vericove'} — Vericove`;if(!state.session?.loggedIn){authPage();return;}renderWorkspace();}
+export function go(route){if(route!=='community'&&location.pathname.startsWith('/community'))history.pushState({},'', '/');state.route=route;if(route==='community'&&!location.pathname.startsWith('/community'))history.pushState({community:true},'','/community');persist();render();window.scrollTo({top:0,behavior:'smooth'});}
 export function view(mode){auth.mode=mode;render();window.scrollTo(0,0)}
 

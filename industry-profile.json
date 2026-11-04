@@ -1,0 +1,13 @@
+{
+  "primaryIndustry": "healthcare and wellness",
+  "secondaryIndustries": ["social community", "health education"],
+  "audience": "Adults seeking women’s health peer support and topic-based discussions",
+  "trustLevel": "high",
+  "experienceArchetypes": ["community feed", "topic discovery", "discussion detail", "profile and membership"],
+  "constraints": [
+    "Keep health records private and separate from public community identity",
+    "Do not present peer experiences as medical advice",
+    "Do not invent engagement or membership counts",
+    "Keep private messaging unavailable without server authentication and authorization"
+  ]
+}

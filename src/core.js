@@ -31,12 +31,14 @@ const iconPaths = {
   settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.7 2.9-.2-.1a1.8 1.8 0 0 0-1.9 0l-.2.1h-3.4l-.1-.2a1.8 1.8 0 0 0-1.5-1l-.2-.1-1.7-2.9.1-.2a1.8 1.8 0 0 0 0-1.8l-.1-.2V10l.2-.1a1.8 1.8 0 0 0 1-1.5l.1-.2 2.9-1.7.2.1a1.8 1.8 0 0 0 1.8 0l.2-.1h3.4l.1.2a1.8 1.8 0 0 0 1.5 1l.2.1 1.7 2.9-.1.2a1.8 1.8 0 0 0 0 1.8l.1.2v3.4l-.2.1a1.8 1.8 0 0 0-1 1.5"/>',
   send:'<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
   close:'<path d="m18 6-12 12M6 6l12 12"/>',
+  menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
   check:'<path d="m5 12 4 4L19 6"/>',
   comment:'<path d="M21 11.5a7.5 7.5 0 0 1-7.5 7.5H7l-4 2v-5.5A7.5 7.5 0 1 1 21 11.5Z"/>',
   sort:'<path d="M4 6h16M7 12h10m-7 6h4"/>',
   calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
   upload:'<path d="M12 16V4m-4 4 4-4 4 4"/><path d="M4 16v4h16v-4"/>',
   arrow:'<path d="M5 12h14m-6-6 6 6-6 6"/>',
+  play:'<path d="m8 5 12 7-12 7V5Z" fill="currentColor" stroke="none"/>',
 };
 export const svg = (name, size=17) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${iconPaths[name]||iconPaths.spark}</svg>`;
 export const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -59,11 +61,17 @@ const defaultState = () => ({
   publications:[],
   enquiries:[],
   posts:[
-    {id:'p1',author:'QuietRiver',time:'2 hr ago',community:'Endometriosis support',tag:'Question',title:'How do you prepare for an appointment when you have a lot to explain?',body:'I have been keeping notes, but I still worry that I will forget something important when I am in the room. What has helped you feel a little more prepared?',votes:28,comments:[{author:'SoftMorning',text:'A one page timeline made a big difference for me. I put my top three questions at the top.'},{author:'MapleSky',text:'I bring someone I trust if I can. You deserve to take your time.'}],voted:false,saved:false},
-    {id:'p2',author:'SoftMorning',time:'5 hr ago',community:'Living with chronic pain',tag:'Experience',title:'A small thing that helped me feel heard at my last visit',body:'I started each visit with the one thing affecting my day the most, then shared my notes. It made the conversation feel more focused for me. Sharing in case it helps someone else.',votes:46,comments:[{author:'QuietRiver',text:'Thank you for sharing this. I might try leading with the thing that is affecting my day most.'}],voted:false,saved:false},
-    {id:'p3',author:'KindOak',time:'1 day ago',community:'Women’s health questions',tag:'Experience',title:'A note on tracking symptoms between visits',body:'I started noting when something happened, how long it lasted and what else was going on. It helped me remember what I wanted to ask at my next visit.',votes:21,comments:[{author:'QuietRiver',text:'The reminder about duration is helpful.'}],voted:false,saved:false}
+    {id:'p1',author:'QuietRiver',time:'2 hr ago',community:'Endometriosis support',tag:'Question',title:'How do you prepare for an appointment when you have a lot to explain?',body:'I have been keeping notes, but I still worry that I will forget something important when I am in the room. What has helped you feel a little more prepared?',visualQuote:'Your questions deserve the time they need.',visualTone:'rose',votes:28,comments:[{author:'SoftMorning',text:'A one page timeline made a big difference for me. I put my top three questions at the top.'},{author:'MapleSky',text:'I bring someone I trust if I can. You deserve to take your time.'}],voted:false,saved:false},
+    {id:'p2',author:'SoftMorning',time:'5 hr ago',community:'Living with chronic pain',tag:'Experience',title:'A small thing that helped me feel heard at my last visit',body:'I started each visit with the one thing affecting my day the most, then shared my notes. It made the conversation feel more focused for me. Sharing in case it helps someone else.',visualQuote:'Start with what matters most today.',visualTone:'sage',votes:46,comments:[{author:'QuietRiver',text:'Thank you for sharing this. I might try leading with the thing that is affecting my day most.'}],voted:false,saved:false},
+    {id:'p3',author:'KindOak',time:'1 day ago',community:'Women’s health questions',tag:'Experience',title:'A note on tracking symptoms between visits',body:'I started noting when something happened, how long it lasted and what else was going on. It helped me remember what I wanted to ask at my next visit.',visualQuote:'Small notes can make space for patterns.',visualTone:'blue',votes:21,comments:[{author:'QuietRiver',text:'The reminder about duration is helpful.'}],voted:false,saved:false}
   ],
   followed:['Endometriosis support','Living with chronic pain'],
+  communityTopics:['Women’s health','Mental wellness','Reproductive health','PCOS','Research & science','Personal stories'],
+  followedTopics:[],
+  exploreCategory:'For You',
+  exploreRecentSearches:[],
+  exploreLiked:[],
+  exploreSaved:[],
   savedProviders:[],
   savedPapers:[],
   reviews:[],

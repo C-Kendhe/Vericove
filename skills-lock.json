@@ -13,11 +13,23 @@
       "skillPath": "skills/frontend-ui-engineering/SKILL.md",
       "computedHash": "22ee43d0367d2c3f611585eead5f0c413bcefa947da34b25a4935726ed76533e"
     },
+    "motion-site-builder": {
+      "source": "kenzofujimoto/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/motion-site-builder/SKILL.md",
+      "computedHash": "d72cb938419095d8cce73ee699c2168fbbbe84d9ee98ba65187d96af0467d41c"
+    },
     "ui-ux-pro-max": {
       "source": "nextlevelbuilder/ui-ux-pro-max-skill",
       "sourceType": "github",
       "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
       "computedHash": "1c584be8d06885d32534d2db379d4a86475dde1239137c8374a972100859b87f"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
     }
   }
 }
