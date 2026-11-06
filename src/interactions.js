@@ -1,5 +1,5 @@
 import { $, $$, isoToday, researchPapers, state, persist, toast, roleName, user, userAvatar, svg, esc, fmtDate, sessionMedia } from './core.js';
-import { render, go, view, auth, avatarAssets, renderCommunityFeed } from './views.js';
+import { render, go, view, auth, avatarAssets, renderCommunityFeed, renderSymptomIntelligenceResults } from './views.js';
 import { openModal, closeModal, pressButton, releaseButton } from './motion.js';
 import { sampleExploreItems, sampleStories, sampleDmConversations, sampleProfileCover, sampleMediaUrl, samplePosterUrl, toggleReelSound } from './community.js';
 
@@ -317,7 +317,67 @@ document.addEventListener('submit',event=>{
   if(form.id==='upload-research-form'){event.preventDefault();const data=Object.fromEntries(new FormData(form));state.publications.unshift({id:Date.now(),title:data.title,source:data.source,status:data.status});persist();dismissModal();render();toast('Publication draft saved on this device');return;}
   if(form.id==='verification-form'){event.preventDefault();dismissModal();toast('No application was saved or sent; verification service is not connected');return;}
   if(form.id==='research-search'){event.preventDefault();const query=String(new FormData(form).get('q')||'').trim().toLowerCase();const set=papers().filter(p=>`${p.title} ${p.summary} ${p.topic} ${p.authors}`.toLowerCase().includes(query));const list=$('#paper-list');if(list)list.innerHTML=set.map(paperCard).join('')||emptyState('No matching publications','Try a different condition, symptom or research topic.');return;}
-  if(form.id==='symptom-intelligence-form'){event.preventDefault();const data=Object.fromEntries(new FormData(form));const symptom=String(data.symptom||'').trim();if(!symptom){toast('Please describe your symptoms first');return;}toast('Symptom details captured. AI research analysis will be connected in Phase 2.');return;}
+  if(form.id==='symptom-intelligence-form'){
+    event.preventDefault();
+    const data=Object.fromEntries(new FormData(form));
+    const symptom=String(data.symptom||'').trim();
+    if(!symptom){toast('Please describe your symptoms first');return;}
+    const consentAccepted=Boolean(form.elements['consentAccepted']?.checked);
+    if(!consentAccepted){toast('Please accept the consent disclosure to proceed');return;}
+    const duration=String(data.duration||'').trim()||'Unspecified';
+    const severity=String(data.severity||'Moderate').trim();
+
+    const btn=$('#si-analyze-btn');
+    const container=$('#si-results-container');
+    const prevBtnText=btn?btn.innerHTML:'';
+    if(btn){btn.disabled=true;btn.innerHTML=`${svg('spark',14)} Analyzing research...`;}
+    if(container){
+      container.innerHTML=`<div class="empty-state" style="padding:40px 16px 36px">
+        <span style="display:inline-flex;margin-bottom:8px;color:var(--plum);animation:spin 1.4s linear infinite">${svg('spark',28)}</span>
+        <strong>Retrieving biomedical research & synthesizing...</strong>
+        <p>Connecting with NCBI PubMed and synthesizing educational research context.</p>
+      </div>`;
+    }
+
+    (async()=>{
+      try{
+        const response=await fetch('/api/symptom-intelligence',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({symptom,duration,severity,consentAccepted:true})
+        });
+        const resJson=await response.json();
+        if(!response.ok||resJson.error){
+          const errMessage=resJson.error?.message||'Unable to retrieve research intelligence at this time.';
+          toast(errMessage);
+          if(container){
+            container.innerHTML=`<div class="empty-state" style="padding:28px 16px 24px">
+              <span style="display:inline-flex;margin-bottom:8px;color:#c04d3b">${svg('info',24)}</span>
+              <strong>Analysis unavailable</strong>
+              <p>${esc(errMessage)}</p>
+            </div>`;
+          }
+        } else if(resJson.data){
+          renderSymptomIntelligenceResults(resJson.data);
+          const card=$('.si-results-card');
+          if(card)card.scrollIntoView({behavior:'smooth',block:'start'});
+          toast('Research intelligence synthesis complete');
+        }
+      }catch(err){
+        toast('Network error while connecting to research service.');
+        if(container){
+          container.innerHTML=`<div class="empty-state" style="padding:28px 16px 24px">
+            <span style="display:inline-flex;margin-bottom:8px;color:#c04d3b">${svg('info',24)}</span>
+            <strong>Connection error</strong>
+            <p>Could not connect to the research service. Please check your network connection.</p>
+          </div>`;
+        }
+      }finally{
+        if(btn){btn.disabled=false;btn.innerHTML=prevBtnText;}
+      }
+    })();
+    return;
+  }
   if(form.id==='report-form')event.preventDefault();
 });
 

@@ -51,6 +51,20 @@ const MULTI_WORD_TERMS = [
   'hot flashes'
 ];
 
+// Colloquial symptom phrase mappings to canonical biomedical terms
+export const PHRASE_MAPPINGS = {
+  'lack of energy': 'fatigue',
+  'loss of energy': 'fatigue',
+  'feeling tired': 'fatigue',
+  'low energy': 'fatigue'
+};
+
+// Combined multi-word patterns sorted by descending length for greedy longest match
+const ALL_MULTI_WORD_PATTERNS = [
+  ...MULTI_WORD_TERMS,
+  ...Object.keys(PHRASE_MAPPINGS)
+].sort((a, b) => b.length - a.length);
+
 // Explicit single-word biomedical terms
 const SINGLE_WORD_TERMS = new Set([
   'adenomyosis',
@@ -103,11 +117,14 @@ export function extractBiomedicalTerms(text) {
   const matched = [];
   let remaining = ` ${normalized} `;
 
-  // 1. Longest multi-word phrases first
-  for (const phrase of MULTI_WORD_TERMS) {
+  // 1. Longest multi-word phrases first (including mapped colloquial phrases)
+  for (const phrase of ALL_MULTI_WORD_PATTERNS) {
     const pattern = ` ${phrase} `;
     if (remaining.includes(pattern)) {
-      matched.push(phrase);
+      const canonicalTerm = PHRASE_MAPPINGS[phrase] || phrase;
+      if (!matched.includes(canonicalTerm)) {
+        matched.push(canonicalTerm);
+      }
       remaining = remaining.replaceAll(pattern, ' ');
       if (matched.length >= 3) break;
     }

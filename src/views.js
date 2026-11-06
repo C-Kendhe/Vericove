@@ -34,9 +34,114 @@ function medicationsPage(){const list=state.medications.map(item=>`<article clas
 function reportsPage(){return `${pageHeading('Consultation reports','Turn your notes into a clear summary for a care conversation.',`<button class="btn primary" data-action="generate-report">${svg('plus')}Prepare a summary</button>`)}<div class="split-layout"><section class="card"><div class="card-head"><div><h2>Your report preview</h2><p>Only the information you choose is included.</p></div><span class="status-tag">Private draft</span></div><h3 style="font:700 13px Manrope;margin:8px 0">Health summary</h3><p class="entry-note">Prepared ${fmtDate(isoToday)} · Reporting period: last 30 days</p><div class="nav-separator"></div><h3 style="font:700 10px Manrope">Topics you have recorded</h3><p class="entry-note">${[...new Set(state.entries.map(e=>e.symptom))].map(esc).join(' · ')||'No symptoms logged yet'}</p><h3 style="font:700 10px Manrope;margin-top:17px">Recent notes</h3>${state.entries.slice(0,3).map(e=>`<p class="entry-note"><b>${fmtDate(e.date)}:</b> ${esc(e.symptom)} — ${esc(e.severity)}. ${esc(e.note||'')}</p>`).join('')}<div class="nav-separator"></div><div class="form-check"><input type="checkbox" id="report-consent" /><label for="report-consent">I reviewed this summary and want to create a shareable copy.</label></div><button class="btn" data-action="share-report">${svg('send')}Create shareable copy</button></section><aside class="card side-card"><div class="card-head"><h2>Built for a better conversation</h2></div><div class="research-sidebar-box"><strong>You remain in control</strong>A report is only shared when you choose to share it. It organizes the information you entered; it cannot diagnose a condition.</div></aside></div>`}
 function symptomIntelligencePage(){
   const disclaimer=`<div class="si-disclaimer">${svg('shield',16)}<div><strong>Medical safety & scope</strong><p>This tool provides educational information based on medical literature. It does not diagnose conditions, recommend treatment or replace professional medical advice.</p></div></div>`;
-  const inputForm=`<section class="card si-input-card"><div class="card-head"><div><h2>Symptom exploration</h2><p>Describe what you are noticing to review relevant biomedical research and patterns.</p></div>${state.entries?.length?`<button type="button" class="btn small" data-action="pick-journal-symptom">${svg('book',14)}Select from journal</button>`:''}</div><form id="symptom-intelligence-form"><div class="form-field"><label for="si-symptom">Symptom description</label><textarea id="si-symptom" name="symptom" rows="3" required placeholder="Describe what you are experiencing in your own words (e.g. sharp pelvic cramping, recurring brain fog, persistent fatigue)..."></textarea></div><div class="form-grid si-form-grid"><div class="form-field"><label for="si-duration">Duration</label><input id="si-duration" name="duration" placeholder="e.g. 2 weeks, intermittent, 3 hours" /></div><div class="form-field"><label for="si-severity">Severity</label><select id="si-severity" name="severity"><option value="Mild">Mild</option><option value="Moderate" selected>Moderate</option><option value="Severe">Severe</option></select></div></div><div class="si-form-actions"><button type="submit" class="btn primary" id="si-analyze-btn">${svg('spark',14)}Analyze symptoms</button></div></form></section>`;
-  const reservedSections=`<section class="card si-results-card"><div class="card-head"><div><h2>Research intelligence overview</h2><p>Scientific literature insights and clinical discussion preparation</p></div></div><div class="empty-state" style="padding:28px 16px 24px"><span style="display:inline-flex;margin-bottom:8px;color:var(--plum)">${svg('spark',24)}</span><strong>Ready for symptom exploration</strong><p>Submit your symptoms above to retrieve research-backed educational information grounded in medical literature.</p></div><div class="si-reserved-grid"><div class="si-reserved-box"><div class="si-reserved-title">${svg('pulse',15)}<strong>Patterns and Biological Context</strong></div><p class="entry-note">Evidence-based biological mechanisms, endocrine pathways, and physiological patterns will be detailed here.</p></div><div class="si-reserved-box"><div class="si-reserved-title">${svg('book',15)}<strong>Relevant Clinical Research</strong></div><p class="entry-note">Peer-reviewed publications, systematic reviews, and clinical papers from PubMed will appear here with source links.</p></div><div class="si-reserved-box"><div class="si-reserved-title">${svg('chat',15)}<strong>Questions to Discuss with a Healthcare Professional</strong></div><p class="entry-note">Structured, non-prescriptive talking points will be prepared here to support your next clinical visit.</p></div><div class="si-reserved-box"><div class="si-reserved-title">${svg('info',15)}<strong>Study Limitations</strong></div><p class="entry-note">Methodological boundaries, demographic representation gaps, and research limitations will be transparently documented here.</p></div></div></section>`;
+  const inputForm=`<section class="card si-input-card"><div class="card-head"><div><h2>Symptom exploration</h2><p>Describe what you are noticing to review relevant biomedical research and patterns.</p></div>${state.entries?.length?`<button type="button" class="btn small" data-action="pick-journal-symptom">${svg('book',14)}Select from journal</button>`:''}</div><form id="symptom-intelligence-form"><div class="form-field"><label for="si-symptom">Symptom description</label><textarea id="si-symptom" name="symptom" rows="3" required placeholder="Describe what you are experiencing in your own words (e.g. sharp pelvic cramping, recurring brain fog, persistent fatigue)..."></textarea></div><div class="form-grid si-form-grid"><div class="form-field"><label for="si-duration">Duration</label><input id="si-duration" name="duration" placeholder="e.g. 2 weeks, intermittent, 3 hours" /></div><div class="form-field"><label for="si-severity">Severity</label><select id="si-severity" name="severity"><option value="Mild">Mild</option><option value="Moderate" selected>Moderate</option><option value="Severe">Severe</option></select></div></div><div class="form-check" style="margin-top:14px;align-items:flex-start"><input type="checkbox" id="si-consent" name="consentAccepted" required style="margin-top:3px" /><label for="si-consent" style="font-size:11px;line-height:1.5;color:#5a545c">I understand that limited symptom-derived biomedical search terms are transmitted to NCBI PubMed and synthesized via Google Gemini for educational research exploration only. This tool does not provide medical diagnosis or treatment.</label></div><div class="si-form-actions"><button type="submit" class="btn primary" id="si-analyze-btn">${svg('spark',14)}Analyze symptoms</button></div></form></section>`;
+  const reservedSections=`<section class="card si-results-card"><div class="card-head"><div><h2>Research intelligence overview</h2><p>Scientific literature insights and clinical discussion preparation</p></div></div><div id="si-results-container"><div class="empty-state" style="padding:28px 16px 24px"><span style="display:inline-flex;margin-bottom:8px;color:var(--plum)">${svg('spark',24)}</span><strong>Ready for symptom exploration</strong><p>Submit your symptoms above to retrieve research-backed educational information grounded in medical literature.</p></div><div class="si-reserved-grid"><div class="si-reserved-box"><div class="si-reserved-title">${svg('pulse',15)}<strong>Patterns and Biological Context</strong></div><p class="entry-note">Evidence-based biological mechanisms, endocrine pathways, and physiological patterns will be detailed here.</p></div><div class="si-reserved-box"><div class="si-reserved-title">${svg('book',15)}<strong>Retrieved Biomedical Literature (Keyword Matched)</strong></div><p class="entry-note">Publications are retrieved using biomedical search terms. Their appearance here does not establish that a study applies to your individual symptoms or health situation. A qualified healthcare professional should assess clinical relevance.</p></div><div class="si-reserved-box"><div class="si-reserved-title">${svg('chat',15)}<strong>Questions to Discuss with a Healthcare Professional</strong></div><p class="entry-note">Structured, non-prescriptive talking points will be prepared here to support your next clinical visit.</p></div><div class="si-reserved-box"><div class="si-reserved-title">${svg('info',15)}<strong>Study Limitations</strong></div><p class="entry-note">Methodological boundaries, demographic representation gaps, and research limitations will be transparently documented here.</p></div></div></div></section>`;
   return `${pageHeading('AI Symptom Intelligence','Evidence-grounded educational research for women’s health symptoms.')}<div class="split-layout"><div>${disclaimer}${inputForm}${reservedSections}</div><aside class="stack side-card"><section class="card"><div class="card-head"><h2>Evidence-based care</h2></div><div class="research-sidebar-box"><strong>Literature-grounded intelligence</strong>Vericove connects patient observations with indexed biomedical research, helping translate lived symptoms into constructive questions for healthcare professionals.</div></section><section class="card"><div class="card-head"><h2>Clinical boundaries</h2></div><div class="research-sidebar-box"><strong>${svg('shield',13)} Strictly non-diagnostic</strong>This workspace is educational. It does not replace clinical evaluation, provide differential diagnoses, or recommend prescription medications.</div></section><section class="card"><div class="card-head"><h2>Preparation for your visit</h2></div><p class="entry-note">Use this information to formulate clear, evidence-informed questions to bring to your doctor or care team.</p><button class="action-link" data-route="reports" style="margin-top:8px">Prepare consultation report →</button></section></aside></div>`;
+}
+
+export function renderSymptomIntelligenceResults(data){
+  const container=$('#si-results-container');
+  if(!container)return;
+  const gemini=data?.gemini;
+  const pubmed=data?.pubmed||data;
+  const records=pubmed?.records||data?.records||[];
+  const matchedTerms=pubmed?.matchedTerms||data?.matchedTerms||[];
+  const fallbackNotice=data?.fallbackNotice;
+  const pubMedMessage=pubmed?.message;
+
+  // Only display fallback notice banner when PubMed actually returned records and Gemini failed
+  const noticeHtml=(fallbackNotice && records.length>0)
+    ?`<div class="si-disclaimer" style="margin-bottom:14px;background:#fff8f0;border-color:#f0dcbe;color:#7a4b18">${svg('info',16)}<div><strong>Notice</strong><p>${esc(fallbackNotice)}</p></div></div>`
+    :'';
+
+  // 1. Patterns and Biological Context
+  let bioContext='';
+  if(gemini?.patternsAndBiologicalContext){
+    bioContext=gemini.patternsAndBiologicalContext;
+  } else if(matchedTerms.length===0){
+    bioContext='Biomedical exploration requires recognized health or symptom terms. No specific biological mechanism could be mapped from the description.';
+  } else if(records.length===0){
+    bioContext=`No indexed clinical publications were found for the identified search term${matchedTerms.length>1?'s':''} (${esc(matchedTerms.join(', '))}).`;
+  } else if(fallbackNotice && records.length>0){
+    bioContext='Direct AI biological pathway synthesis is temporarily unavailable. Please review the retrieved biomedical publications below.';
+  } else {
+    bioContext='No biological mechanisms synthesized.';
+  }
+
+  // 2. Retrieved Biomedical Literature (Keyword Matched)
+  let researchHtml='';
+  if(gemini?.relevantClinicalResearch?.length){
+    researchHtml=gemini.relevantClinicalResearch.map(item=>{
+      const pmid=esc(item.pmid);
+      const citation=esc(item.citation||`PMID: ${pmid}`);
+      const finding=esc(item.keyFinding||'');
+      return `<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #f0edf0"><a href="https://pubmed.ncbi.nlm.nih.gov/${pmid}/" target="_blank" rel="noopener noreferrer" style="font-weight:700;color:var(--plum);text-decoration:underline">${citation} ↗</a><p class="entry-note" style="margin-top:4px">${finding}</p></div>`;
+    }).join('');
+  } else if(records.length){
+    researchHtml=records.map(r=>{
+      const pmid=esc(r.pmid);
+      const title=esc(r.title);
+      const authors=esc(r.authors?.slice(0,2).join(', ')||'Authors');
+      const year=esc(r.pubDate||'');
+      return `<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #f0edf0"><a href="https://pubmed.ncbi.nlm.nih.gov/${pmid}/" target="_blank" rel="noopener noreferrer" style="font-weight:700;color:var(--plum);text-decoration:underline">${title} ↗</a><div class="entry-meta" style="margin-top:3px">${authors} (${year}) · PMID: ${pmid} · <span class="status-tag" style="font-size:9px">${esc(r.evidenceType||'Abstract')}</span></div></div>`;
+    }).join('');
+  } else if(matchedTerms.length===0){
+    researchHtml=`<p class="entry-note">No recognized biomedical search terms were identified from your description. Try common terms such as fatigue, pelvic cramping, bloating, or irregular periods.</p>${pubMedMessage?`<div style="font-size:11px;color:#8a8286;margin-top:6px;font-style:italic">${esc(pubMedMessage)}</div>`:''}`;
+  } else {
+    researchHtml=`<p class="entry-note">PubMed was searched for: <strong>${esc(matchedTerms.join(', '))}</strong>, but no matching citations were returned.</p>${pubMedMessage?`<div style="font-size:11px;color:#8a8286;margin-top:6px;font-style:italic">${esc(pubMedMessage)}</div>`:''}`;
+  }
+
+  // 3. Consultation Talking Points
+  let questionsHtml='';
+  if(gemini?.consultationQuestions?.length){
+    questionsHtml=`<ul style="margin:0;padding-left:18px;font-size:12px;line-height:1.6;color:var(--ink)">`+
+      gemini.consultationQuestions.map(q=>`<li style="margin-bottom:6px">${esc(q)}</li>`).join('')+
+      `</ul>`;
+  } else if(matchedTerms.length===0){
+    questionsHtml=`<p class="entry-note">Consultation questions could not be tailored without recognized biomedical terms. Discuss your specific observations directly with a healthcare provider.</p>`;
+  } else if(records.length===0){
+    questionsHtml=`<p class="entry-note">Consider discussing with your healthcare provider whether alternative terms or evaluations are appropriate for ${esc(matchedTerms.join(', '))}.</p>`;
+  } else {
+    questionsHtml=`<p class="entry-note">Consultation talking points could not be generated at this time.</p>`;
+  }
+
+  // 4. Study Limitations & Disclaimer
+  let limitations='';
+  if(gemini?.studyLimitations){
+    limitations=gemini.studyLimitations;
+  } else if(matchedTerms.length===0){
+    limitations='No literature search was conducted because the query did not match recognized biomedical terminology.';
+  } else if(records.length===0){
+    limitations='NCBI PubMed returned zero records matching the search criteria for the identified terms.';
+  } else {
+    limitations='Methodological boundaries and sample diversity details are available directly in full study publications.';
+  }
+
+  const disclaimerText=pubmed?.disclaimer||'PubMed citations provided courtesy of NLM / NCBI.';
+
+  container.innerHTML=`
+    ${noticeHtml}
+    <div class="si-reserved-grid">
+      <div class="si-reserved-box" style="border-style:solid;background:#fff">
+        <div class="si-reserved-title">${svg('pulse',15)}<strong>Patterns and Biological Context</strong></div>
+        <p class="entry-note" style="font-size:12px;line-height:1.6;color:var(--ink)">${esc(bioContext)}</p>
+      </div>
+      <div class="si-reserved-box" style="border-style:solid;background:#fff">
+        <div class="si-reserved-title">${svg('book',15)}<strong>Retrieved Biomedical Literature (Keyword Matched)</strong></div>
+        <p class="entry-note" style="font-size:11px;line-height:1.45;color:#6b656d;margin-bottom:8px">Publications are retrieved using biomedical search terms. Their appearance here does not establish that a study applies to your individual symptoms or health situation. A qualified healthcare professional should assess clinical relevance.</p>
+        <div style="font-size:12px;line-height:1.5;margin-top:6px">${researchHtml}</div>
+      </div>
+      <div class="si-reserved-box" style="border-style:solid;background:#fff">
+        <div class="si-reserved-title">${svg('chat',15)}<strong>Questions to Discuss with a Healthcare Professional</strong></div>
+        <div style="margin-top:6px">${questionsHtml}</div>
+      </div>
+      <div class="si-reserved-box" style="border-style:solid;background:#fff">
+        <div class="si-reserved-title">${svg('info',15)}<strong>Study Limitations</strong></div>
+        <p class="entry-note" style="font-size:12px;line-height:1.6;color:var(--ink);margin-bottom:8px">${esc(limitations)}</p>
+        <div style="font-size:10px;color:#8a8286;border-top:1px solid #f0edf0;padding-top:6px;line-height:1.4">${esc(disclaimerText)}</div>
+      </div>
+    </div>
+  `;
 }
 
 function communityItems(){return `<div class="community-item"><span class="community-mark">✿</span><span><strong>Endometriosis support</strong><small>Condition-based space</small></span><button class="join" data-action="follow" data-community="Endometriosis support">${state.followed.includes('Endometriosis support')?'Joined':'Join'}</button></div><div class="community-item"><span class="community-mark">☼</span><span><strong>Living with chronic pain</strong><small>Shared experience space</small></span><button class="join" data-action="follow" data-community="Living with chronic pain">${state.followed.includes('Living with chronic pain')?'Joined':'Join'}</button></div><div class="community-item"><span class="community-mark">♡</span><span><strong>Women’s health questions</strong><small>Question and support space</small></span><button class="join" data-action="follow" data-community="Women’s health questions">${state.followed.includes('Women’s health questions')?'Joined':'Join'}</button></div>`}

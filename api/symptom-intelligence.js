@@ -7,6 +7,7 @@
  */
 
 import { queryPubMed } from './lib/pubmed.js';
+import { synthesizeResearch } from './lib/gemini.js';
 
 const MAX_PAYLOAD_BYTES = 10240; // 10 KB limit
 const MAX_SYMPTOM_LENGTH = 1000;
@@ -232,10 +233,75 @@ export default async function handler(req, res) {
       });
     }
 
+    const matchedTerms = pubMedResult.data?.matchedTerms || [];
+    const pubMedRecords = pubMedResult.data?.records || [];
+    const totalFound = pubMedResult.data?.totalFound || 0;
+
+    // State 1: No biomedical search terms recognized from input (do not call Gemini)
+    if (matchedTerms.length === 0) {
+      return res.status(200).json({
+        status: 'no_terms_matched',
+        stage: 'Phase 2.3 - Gemini Synthesis',
+        data: {
+          status: 'no_terms_matched',
+          totalFound: 0,
+          records: [],
+          matchedTerms: [],
+          disclaimer: pubMedResult.data?.disclaimer,
+          pubmed: pubMedResult.data,
+          gemini: null,
+          fallbackNotice: null
+        }
+      });
+    }
+
+    // State 2: Biomedical terms recognized, but PubMed returned zero matching records (do not call Gemini)
+    if (pubMedRecords.length === 0) {
+      return res.status(200).json({
+        status: 'no_records_found',
+        stage: 'Phase 2.3 - Gemini Synthesis',
+        data: {
+          status: 'no_records_found',
+          totalFound,
+          records: [],
+          matchedTerms,
+          disclaimer: pubMedResult.data?.disclaimer,
+          pubmed: pubMedResult.data,
+          gemini: null,
+          fallbackNotice: null
+        }
+      });
+    }
+
+    // State 3: PubMed records retrieved; synthesize evidence with Google Gemini 3.8 Flash
+    const geminiResult = await synthesizeResearch(
+      {
+        symptom: body.symptom,
+        duration: body.duration,
+        severity: body.severity
+      },
+      pubMedRecords
+    );
+
+    // Gracefully fallback to PubMed-only records ONLY when PubMed actually returned records and Gemini fails
+    const geminiData = geminiResult?.data || null;
+    const fallbackNotice = geminiResult?.error
+      ? 'AI research synthesis is temporarily unavailable. Genuine biomedical literature retrieved from PubMed is displayed.'
+      : null;
+
     return res.status(200).json({
       status: 'ready',
-      stage: 'Phase 2.2 - PubMed Retrieval',
-      data: pubMedResult.data
+      stage: 'Phase 2.3 - Gemini Synthesis',
+      data: {
+        status: 'ready',
+        totalFound,
+        records: pubMedRecords,
+        matchedTerms,
+        disclaimer: pubMedResult.data?.disclaimer,
+        pubmed: pubMedResult.data,
+        gemini: geminiData,
+        fallbackNotice
+      }
     });
   } catch {
     return res.status(500).json({
