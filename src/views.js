@@ -2,6 +2,8 @@ import { $, $$, dateLabel, isoToday, researchPapers, state, persist, app, toast,
 import { enterPage, animateSelection } from './motion.js';
 import { communityPage as communityApplicationPage } from './community.js';
 import { workspaceSidebar } from './navigation.js';
+import { COMMUNITY_DISCLAIMER, COMMUNITY_CATEGORIES, DEMO_COMMUNITY_VOICES, getCommunityVoices, getVoiceById } from './community-voices-data.js';
+import { DOCTOR_DISCLAIMER, DOCTOR_SPECIALTIES, DEMO_DOCTOR_PROFILES, getSuggestedSpecialties, getDoctors, getDoctorById } from './doctor-discovery-data.js';
 const webAssets=Object.fromEntries(Object.entries(import.meta.glob('/assets/WEB assets/*.{jpg,jpeg,png,webp}',{eager:true,query:'?url',import:'default'})).map(([path,url])=>[path.split('/').pop(),url]));
 const webAsset=filename=>webAssets[filename]||'';
 const routeTitles={dashboard:'Home','my-health':'My health','symptom-intelligence':'AI Symptom Intelligence',care:'Find care',research:'Research hub',matches:'Research matches',discover:'Discover',community:'Community',timeline:'Health timeline',records:'Medical records',medications:'Treatments',reports:'Consultation reports',professional:'Professional workspace',profile:'Profile',verification:'Credential verification',admin:'Admin overview',moderation:'Community moderation',notifications:'Notifications',settings:'Privacy & settings'};
@@ -36,7 +38,270 @@ function symptomIntelligencePage(){
   const disclaimer=`<div class="si-disclaimer">${svg('shield',16)}<div><strong>Medical safety & scope</strong><p>This tool provides educational information based on medical literature. It does not diagnose conditions, recommend treatment or replace professional medical advice.</p></div></div>`;
   const inputForm=`<section class="card si-input-card"><div class="card-head"><div><h2>Symptom exploration</h2><p>Describe what you are noticing to review relevant biomedical research and patterns.</p></div>${state.entries?.length?`<button type="button" class="btn small" data-action="pick-journal-symptom">${svg('book',14)}Select from journal</button>`:''}</div><form id="symptom-intelligence-form"><div class="form-field"><label for="si-symptom">Symptom description</label><textarea id="si-symptom" name="symptom" rows="3" required placeholder="Describe what you are experiencing in your own words (e.g. sharp pelvic cramping, recurring brain fog, persistent fatigue)..."></textarea></div><div class="form-grid si-form-grid"><div class="form-field"><label for="si-duration">Duration</label><input id="si-duration" name="duration" placeholder="e.g. 2 weeks, intermittent, 3 hours" /></div><div class="form-field"><label for="si-severity">Severity</label><select id="si-severity" name="severity"><option value="Mild">Mild</option><option value="Moderate" selected>Moderate</option><option value="Severe">Severe</option></select></div></div><div class="form-check" style="margin-top:14px;align-items:flex-start"><input type="checkbox" id="si-consent" name="consentAccepted" required style="margin-top:3px" /><label for="si-consent" style="font-size:11px;line-height:1.5;color:#5a545c">I understand that limited symptom-derived biomedical search terms are transmitted to NCBI PubMed and synthesized via Google Gemini for educational research exploration only. This tool does not provide medical diagnosis or treatment.</label></div><div class="si-form-actions"><button type="submit" class="btn primary" id="si-analyze-btn">${svg('spark',14)}Analyze symptoms</button></div></form></section>`;
   const reservedSections=`<section class="card si-results-card"><div class="card-head"><div><h2>Research intelligence overview</h2><p>Scientific literature insights and clinical discussion preparation</p></div></div><div id="si-results-container"><div class="empty-state" style="padding:28px 16px 24px"><span style="display:inline-flex;margin-bottom:8px;color:var(--plum)">${svg('spark',24)}</span><strong>Ready for symptom exploration</strong><p>Submit your symptoms above to retrieve research-backed educational information grounded in medical literature.</p></div><div class="si-reserved-grid"><div class="si-reserved-box"><div class="si-reserved-title">${svg('pulse',15)}<strong>Patterns and Biological Context</strong></div><p class="entry-note">Evidence-based biological mechanisms, endocrine pathways, and physiological patterns will be detailed here.</p></div><div class="si-reserved-box"><div class="si-reserved-title">${svg('book',15)}<strong>Retrieved Biomedical Literature (Keyword Matched)</strong></div><p class="entry-note">Publications are retrieved using biomedical search terms. Their appearance here does not establish that a study applies to your individual symptoms or health situation. A qualified healthcare professional should assess clinical relevance.</p></div><div class="si-reserved-box"><div class="si-reserved-title">${svg('chat',15)}<strong>Questions to Discuss with a Healthcare Professional</strong></div><p class="entry-note">Structured, non-prescriptive talking points will be prepared here to support your next clinical visit.</p></div><div class="si-reserved-box"><div class="si-reserved-title">${svg('info',15)}<strong>Study Limitations</strong></div><p class="entry-note">Methodological boundaries, demographic representation gaps, and research limitations will be transparently documented here.</p></div></div></div></section>`;
-  return `${pageHeading('AI Symptom Intelligence','Evidence-grounded educational research for women’s health symptoms.')}<div class="split-layout"><div>${disclaimer}${inputForm}${reservedSections}</div><aside class="stack side-card"><section class="card"><div class="card-head"><h2>Evidence-based care</h2></div><div class="research-sidebar-box"><strong>Literature-grounded intelligence</strong>Vericove connects patient observations with indexed biomedical research, helping translate lived symptoms into constructive questions for healthcare professionals.</div></section><section class="card"><div class="card-head"><h2>Clinical boundaries</h2></div><div class="research-sidebar-box"><strong>${svg('shield',13)} Strictly non-diagnostic</strong>This workspace is educational. It does not replace clinical evaluation, provide differential diagnoses, or recommend prescription medications.</div></section><section class="card"><div class="card-head"><h2>Preparation for your visit</h2></div><p class="entry-note">Use this information to formulate clear, evidence-informed questions to bring to your doctor or care team.</p><button class="action-link" data-route="reports" style="margin-top:8px">Prepare consultation report →</button></section></aside></div>`;
+  const communitySection=`<section class="card si-community-preview-card" style="margin-top:16px"><div id="si-community-voices-container">${renderCommunityVoicesSection([], 'All', 4)}</div></section>`;
+  const doctorConnectCard=`<section class="card connect-doctor-card"><div class="card-head"><div><span class="overline" style="color:var(--plum);font-weight:700;font-size:9px">CARE DISCOVERY</span><h2 style="font-size:14px">Connect with a Doctor</h2></div><span class="status-tag" style="background:#f4edf5;color:var(--plum)">Directory</span></div><p class="entry-note" style="margin-bottom:10px">Explore doctor profiles across gynecology, endocrinology, reproductive medicine and general practice.</p><div class="doctor-badge-row" style="margin-bottom:12px"><span class="doctor-chip-preview">Gynecology</span><span class="doctor-chip-preview">Endocrinology</span><span class="doctor-chip-preview">General Medicine</span></div><button type="button" class="btn primary full-width" data-action="open-doctor-discovery">${svg('user',14)}Find Relevant Doctors</button><div class="demo-caption" style="font-size:9.5px;color:#8a8286;margin-top:8px;line-height:1.4">${DOCTOR_DISCLAIMER}</div></section>`;
+  return `${pageHeading('AI Symptom Intelligence','Evidence-grounded educational research for women’s health symptoms.')}<div class="split-layout"><div>${disclaimer}${inputForm}${reservedSections}${communitySection}</div><aside class="stack side-card">${doctorConnectCard}<section class="card"><div class="card-head"><h2>Evidence-based care</h2></div><div class="research-sidebar-box"><strong>Literature-grounded intelligence</strong>Vericove connects patient observations with indexed biomedical research, helping translate lived symptoms into constructive questions for healthcare professionals.</div></section><section class="card"><div class="card-head"><h2>Clinical boundaries</h2></div><div class="research-sidebar-box"><strong>${svg('shield',13)} Strictly non-diagnostic</strong>This workspace is educational. It does not replace clinical evaluation, provide differential diagnoses, or recommend prescription medications.</div></section><section class="card"><div class="card-head"><h2>Preparation for your visit</h2></div><p class="entry-note">Use this information to formulate clear, evidence-informed questions to bring to your doctor or care team.</p><button class="action-link" data-route="reports" style="margin-top:8px">Prepare consultation report →</button></section></aside></div>`;
+}
+
+export function renderCommunityVoicesSection(matchedTerms = [], activeCategory = 'All', limit = 4){
+  const result=getCommunityVoices(matchedTerms, activeCategory, limit);
+  const categoriesHtml=COMMUNITY_CATEGORIES.map(cat=>{
+    const isActive=cat.toLowerCase()===activeCategory.toLowerCase();
+    return `<button type="button" class="pill ${isActive?'active':''}" data-action="filter-community-voices" data-category="${esc(cat)}">${esc(cat)}</button>`;
+  }).join('');
+
+  let cardsHtml='';
+  if(result.voices.length>0){
+    cardsHtml=`<div class="cv-grid">${result.voices.map(voice=>renderCommunityVoiceCard(voice)).join('')}</div>`;
+  } else {
+    cardsHtml=`<div class="empty-state" style="padding:24px 16px"><span style="display:inline-flex;margin-bottom:6px;color:var(--plum)">${svg('chat',20)}</span><strong>No conversations found in this category</strong><p>Try selecting another category or view all community perspectives.</p><button type="button" class="btn small" data-action="filter-community-voices" data-category="All">View all discussions</button></div>`;
+  }
+
+  const loadMoreBtn=result.hasMore
+    ?`<div style="text-align:center;margin-top:14px"><button type="button" class="btn cv-load-more" data-action="load-more-voices" data-category="${esc(activeCategory)}" data-limit="${limit+4}">Load more conversations (${result.total-limit} remaining)</button></div>`
+    :'';
+
+  const matchNotice=matchedTerms.length>0
+    ?`<div class="cv-match-badge">${svg('spark',12)}<span>Discussions matching analyzed terms: <strong>${esc(matchedTerms.join(', '))}</strong></span></div>`
+    :'';
+
+  return `
+    <div class="community-voices-section">
+      <div class="cv-head">
+        <div>
+          <span class="overline" style="color:var(--plum);font-weight:700">COMMUNITY PERSPECTIVES</span>
+          <h3 style="font:700 16px Manrope;margin:2px 0 4px">Community Voices — What People Are Saying</h3>
+          <p class="entry-note">Explore shared experiences, discussions and perspectives around this health topic.</p>
+        </div>
+      </div>
+      <div class="cv-disclaimer">
+        ${svg('info',14)}
+        <span><strong>Demo community</strong> — these conversations are illustrative examples, not real patient experiences.</span>
+      </div>
+      ${matchNotice}
+      <div class="filter-row cv-filter-row" style="margin-top:12px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px">
+        ${categoriesHtml}
+      </div>
+      <div id="cv-cards-wrapper">
+        ${cardsHtml}
+      </div>
+      ${loadMoreBtn}
+    </div>
+  `;
+}
+
+export function renderCommunityVoiceCard(voice){
+  const tagsHtml=(voice.tags||[]).map(t=>`<span class="cv-mini-tag">${esc(t)}</span>`).join('');
+  return `
+    <article class="cv-card" data-voice-id="${esc(voice.id)}">
+      <div class="cv-card-top">
+        <span class="avatar ${esc(voice.tone)}" style="width:34px;height:34px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${esc(voice.initials)}</span>
+        <div class="cv-card-author">
+          <strong>${esc(voice.author)} <small class="demo-tag">Illustrative</small></strong>
+          <span>${esc(voice.timeAgo)} · in <span class="cv-cat-name">${esc(voice.category)}</span></span>
+        </div>
+      </div>
+      <h4 class="cv-card-title">${esc(voice.title)}</h4>
+      <p class="cv-card-snippet">${esc(voice.snippet)}</p>
+      <div class="cv-tags-row">${tagsHtml}</div>
+      <div class="cv-card-footer">
+        <span class="cv-count">${svg('heart',12)} ${voice.likes} helpful</span>
+        <span class="cv-count">${svg('comment',12)} ${voice.replyCount} replies</span>
+        <button type="button" class="btn small cv-view-btn" data-action="view-voice-discussion" data-id="${esc(voice.id)}">View discussion</button>
+      </div>
+    </article>
+  `;
+}
+
+export function voiceDiscussionModalMarkup(voice){
+  if(!voice)return `<p>Discussion not found.</p>`;
+  const replies=voice.replies||[];
+  const repliesHtml=replies.map(r=>`
+    <div class="thread-comment" style="margin-bottom:10px;padding:10px 12px;background:#fcfbfa;border-radius:10px;border:1px solid #f0edf0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <strong style="font-size:12px;color:var(--ink)">${esc(r.author)} <small style="font-weight:400;color:#9b9ca2">${esc(r.timeAgo)}</small></strong>
+        <span class="demo-tag" style="font-size:9px">Illustrative</span>
+      </div>
+      <p style="font-size:12px;line-height:1.5;margin:0;color:#453f47">${esc(r.text)}</p>
+    </div>
+  `).join('');
+
+  return `
+    <div class="voice-detail-modal-body">
+      <div class="cv-disclaimer" style="margin-bottom:14px">
+        ${svg('info',14)}
+        <span><strong>Demo community</strong> — these conversations are illustrative examples, not real patient experiences.</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span class="avatar ${esc(voice.tone)}" style="width:40px;height:40px;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${esc(voice.initials)}</span>
+        <div>
+          <strong style="font-size:14px">${esc(voice.author)} <small class="demo-tag">Illustrative</small></strong>
+          <div style="font-size:11px;color:#7a727c">${esc(voice.timeAgo)} · Category: <strong>${esc(voice.category)}</strong></div>
+        </div>
+      </div>
+      <h3 style="font:700 15px Manrope;margin:0 0 10px;color:var(--ink)">${esc(voice.title)}</h3>
+      <div style="font-size:13px;line-height:1.65;color:var(--ink);white-space:pre-line;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #f0edf0">
+        ${esc(voice.fullText)}
+      </div>
+      <div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+        <h4 style="font:700 12px Manrope;margin:0;color:#453f47">Conversation replies (${replies.length})</h4>
+        <span style="font-size:11px;color:#9b9ca2">${voice.likes} members marked helpful</span>
+      </div>
+      <div class="thread-list" style="max-height:240px;overflow-y:auto;padding-right:4px">
+        ${repliesHtml||'<p class="entry-note">No replies yet.</p>'}
+      </div>
+    </div>
+  `;
+}
+
+export function renderDoctorContextualBanner(matchedTerms = []){
+  const suggested=getSuggestedSpecialties(matchedTerms);
+  const chipsHtml=suggested.map(s=>`<span class="doctor-chip-preview">${esc(s)}</span>`).join('');
+  return `
+    <div class="si-doctor-banner">
+      <div class="si-doctor-banner-copy">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <span class="overline" style="color:var(--plum);font-weight:700;margin:0;font-size:9px">CONNECT WITH A DOCTOR</span>
+          <span class="demo-tag" style="font-size:9px">Discovery suggestion</span>
+        </div>
+        <h4 style="font:700 14px Manrope;margin:2px 0 4px;color:var(--ink)">Explore relevant healthcare professionals</h4>
+        <p class="entry-note" style="margin:0 0 6px">Suggested specialties based on explored terms: <strong>${esc(suggested.join(', '))}</strong>. (Discovery suggestions only · not medical referrals or clinical evaluations).</p>
+        <div class="doctor-badge-row">${chipsHtml}</div>
+      </div>
+      <button type="button" class="btn primary" data-action="open-doctor-discovery" style="align-self:center;flex-shrink:0">
+        ${svg('user',14)}Find Relevant Doctors
+      </button>
+    </div>
+  `;
+}
+
+export function doctorDiscoveryModalMarkup(matchedTerms = [], activeSpecialty = 'All specialties', searchQuery = ''){
+  const doctors=getDoctors(matchedTerms, activeSpecialty, searchQuery);
+  const suggested=getSuggestedSpecialties(matchedTerms);
+
+  const filterPills=DOCTOR_SPECIALTIES.map(spec=>{
+    const isActive=spec.toLowerCase()===activeSpecialty.toLowerCase();
+    return `<button type="button" class="pill ${isActive?'active':''}" data-action="filter-doctor-specialty" data-specialty="${esc(spec)}">${esc(spec)}</button>`;
+  }).join('');
+
+  let docsListHtml='';
+  if(doctors.length>0){
+    docsListHtml=`<div class="doctor-grid">${doctors.map(doc=>renderDoctorCard(doc)).join('')}</div>`;
+  } else {
+    docsListHtml=`<div class="empty-state" style="padding:32px 16px"><span style="display:inline-flex;margin-bottom:8px;color:var(--plum)">${svg('user',24)}</span><strong>No doctor profiles found</strong><p>No profiles match "${esc(searchQuery||activeSpecialty)}". Try clearing your search or selecting "All specialties".</p><button type="button" class="btn small" data-action="reset-doctor-filters">Reset filters</button></div>`;
+  }
+
+  const suggestedNotice=matchedTerms.length>0
+    ?`<div class="doc-match-notice">${svg('spark',13)}<span>Suggested specialties for explored terms (${esc(matchedTerms.join(', '))}): <strong>${esc(suggested.join(', '))}</strong>. These are discovery suggestions, not medical recommendations.</span></div>`
+    :'';
+
+  return `
+    <div class="doctor-discovery-modal-body">
+      <div class="doc-disclaimer">
+        ${svg('shield',14)}
+        <span><strong>Demo directory</strong> — these profiles do not represent verified or available healthcare professionals.</span>
+      </div>
+      ${suggestedNotice}
+      <div class="doctor-search-bar" style="margin-top:12px">
+        <span class="doctor-search-icon">${svg('search',15)}</span>
+        <input id="doctor-discovery-search" placeholder="Search by doctor name, specialty, city (e.g. Pune), or language..." value="${esc(searchQuery)}" aria-label="Search doctors" />
+        ${searchQuery?`<button type="button" class="btn small" data-action="clear-doctor-search">Clear</button>`:''}
+      </div>
+      <div class="filter-row doc-filter-row" style="margin:12px 0;overflow-x:auto;padding-bottom:4px">
+        ${filterPills}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:11px;font-weight:700;color:#6b656d">${doctors.length} profile${doctors.length!==1?'s':''} available</span>
+        <span style="font-size:10px;color:#9b9ca2">Sample Indian directory</span>
+      </div>
+      <div id="doctor-results-list" style="max-height:460px;overflow-y:auto;padding-right:4px">
+        ${docsListHtml}
+      </div>
+    </div>
+  `;
+}
+
+export function renderDoctorCard(doc){
+  return `
+    <article class="doctor-card-item" data-doctor-id="${esc(doc.id)}">
+      <div class="doc-card-header">
+        <span class="avatar ${esc(doc.tone)}" style="width:44px;height:44px;font-size:15px;font-weight:700;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${esc(doc.initials)}</span>
+        <div style="flex-grow:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <h4 class="doc-name">${esc(doc.name)}</h4>
+            <span class="demo-tag">Illustrative</span>
+          </div>
+          <div class="doc-sub">
+            <span class="doc-spec-pill">${esc(doc.specialty)}</span>
+            <span>· ${doc.experienceYrs} yrs exp</span>
+          </div>
+        </div>
+      </div>
+      <p class="doc-bio">${esc(doc.bio)}</p>
+      <div class="doc-meta-info">
+        <div class="doc-meta-row">
+          <span>${svg('pin',12)} ${esc(doc.location)}</span>
+          <span class="doc-mode-pill">${esc(doc.consultationType)}</span>
+        </div>
+        <div class="doc-meta-row" style="margin-top:4px;font-size:11px;color:#7a727c">
+          <span>Languages: ${esc(doc.languages.join(', '))}</span>
+          <strong style="color:var(--ink)">Fee: ${esc(doc.fee)}</strong>
+        </div>
+      </div>
+      <div class="doc-card-actions">
+        <button type="button" class="btn small" data-action="view-doctor-profile" data-id="${esc(doc.id)}">View Profile</button>
+        <button type="button" class="btn small primary" data-action="connect-doctor" data-id="${esc(doc.id)}">Connect</button>
+      </div>
+    </article>
+  `;
+}
+
+export function doctorProfileModalMarkup(doc){
+  if(!doc)return `<p>Doctor profile not found.</p>`;
+  const focusHtml=(doc.focusAreas||[]).map(f=>`<span class="doc-focus-tag">${esc(f)}</span>`).join('');
+  return `
+    <div class="doctor-profile-modal-body">
+      <div class="doc-disclaimer" style="margin-bottom:14px">
+        ${svg('shield',14)}
+        <span><strong>Demo directory</strong> — these profiles do not represent verified or available healthcare professionals.</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px">
+        <span class="avatar ${esc(doc.tone)}" style="width:56px;height:56px;font-size:18px;font-weight:700;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${esc(doc.initials)}</span>
+        <div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <h3 style="font:700 16px Manrope;margin:0;color:var(--ink)">${esc(doc.name)}</h3>
+            <span class="demo-tag">Illustrative</span>
+          </div>
+          <div style="font-size:12px;color:var(--plum);font-weight:600;margin-top:2px">${esc(doc.specialty)} · ${doc.experienceYrs} years experience</div>
+          <div style="font-size:11px;color:#7a727c;margin-top:2px">${esc(doc.qualifications)}</div>
+        </div>
+      </div>
+      <div style="background:#fcfbfa;border:1px solid #f0edf0;border-radius:12px;padding:12px 14px;margin-bottom:14px">
+        <h4 style="font:700 11px Manrope;text-transform:uppercase;letter-spacing:.04em;color:#7a727c;margin:0 0 6px">About</h4>
+        <p style="font-size:12px;line-height:1.6;margin:0;color:var(--ink)">${esc(doc.bio)}</p>
+      </div>
+      <div class="doc-detail-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div style="background:#fcfbfa;border:1px solid #f0edf0;border-radius:10px;padding:10px 12px">
+          <strong style="font-size:11px;color:#7a727c;display:block;margin-bottom:3px">Location & Mode</strong>
+          <span style="font-size:12px;color:var(--ink)">${esc(doc.location)}</span>
+          <span class="doc-mode-pill" style="display:inline-block;margin-top:4px">${esc(doc.consultationType)}</span>
+        </div>
+        <div style="background:#fcfbfa;border:1px solid #f0edf0;border-radius:10px;padding:10px 12px">
+          <strong style="font-size:11px;color:#7a727c;display:block;margin-bottom:3px">Consultation Fee</strong>
+          <span style="font-size:13px;font-weight:700;color:var(--ink)">${esc(doc.fee)}</span>
+          <small style="display:block;font-size:10px;color:#9b9ca2">Per standard consultation</small>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <h4 style="font:700 11px Manrope;text-transform:uppercase;letter-spacing:.04em;color:#7a727c;margin:0 0 6px">Clinical Focus Areas</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${focusHtml}</div>
+      </div>
+      <div style="background:#fbf9fa;border:1px dashed #ded8e0;border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:11px;color:#6b656d">
+        <strong>Weekly Availability:</strong> ${esc(doc.availability)}<br>
+        <strong>Languages:</strong> ${esc(doc.languages.join(', '))}
+      </div>
+    </div>
+  `;
 }
 
 export function renderSymptomIntelligenceResults(data){
@@ -141,7 +406,14 @@ export function renderSymptomIntelligenceResults(data){
         <div style="font-size:10px;color:#8a8286;border-top:1px solid #f0edf0;padding-top:6px;line-height:1.4">${esc(disclaimerText)}</div>
       </div>
     </div>
+    ${renderDoctorContextualBanner(matchedTerms)}
   `;
+
+  // Also update the community voices section on the page if present
+  const communityContainer=$('#si-community-voices-container');
+  if(communityContainer){
+    communityContainer.innerHTML=renderCommunityVoicesSection(matchedTerms, 'All', 4);
+  }
 }
 
 function communityItems(){return `<div class="community-item"><span class="community-mark">✿</span><span><strong>Endometriosis support</strong><small>Condition-based space</small></span><button class="join" data-action="follow" data-community="Endometriosis support">${state.followed.includes('Endometriosis support')?'Joined':'Join'}</button></div><div class="community-item"><span class="community-mark">☼</span><span><strong>Living with chronic pain</strong><small>Shared experience space</small></span><button class="join" data-action="follow" data-community="Living with chronic pain">${state.followed.includes('Living with chronic pain')?'Joined':'Join'}</button></div><div class="community-item"><span class="community-mark">♡</span><span><strong>Women’s health questions</strong><small>Question and support space</small></span><button class="join" data-action="follow" data-community="Women’s health questions">${state.followed.includes('Women’s health questions')?'Joined':'Join'}</button></div>`}

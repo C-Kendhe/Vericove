@@ -81,7 +81,7 @@ function buildUserPrompt(symptomData, pubMedRecords) {
     evidenceText = pubMedRecords
       .map((r, i) => {
         const authors = r.authors?.length ? r.authors.slice(0, 3).join(', ') : 'Authors not listed';
-        const abstractSnippet = r.abstract ? r.abstract.slice(0, 1500) : 'Abstract not available (Citation only)';
+        const abstractSnippet = r.abstract ? r.abstract.slice(0, 800) : 'Abstract not available (Citation only)';
         return `[Record ${i + 1}]
 PMID: ${r.pmid}
 Title: ${r.title}
@@ -199,13 +199,20 @@ export async function synthesizeResearch(symptomData, pubMedRecords = [], option
     };
   }
 
-  const model = options.model || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  const primaryModel = options.model || process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+  const candidateModels = [primaryModel, 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-3.5-flash'];
+  const modelQueue = [...new Set(candidateModels.filter(Boolean))];
+
   const validPmidSet = new Set((pubMedRecords || []).map(r => String(r.pmid)));
   const userPrompt = buildUserPrompt(symptomData, pubMedRecords);
 
+  const OVERALL_TIMEOUT_MS = options.overallTimeoutMs || 25000;
+  const startTime = Date.now();
+
   let timer;
+  let lastError = null;
+
   try {
-    const OVERALL_TIMEOUT_MS = options.overallTimeoutMs || 11500;
     const timeoutPromise = new Promise((_, reject) => {
       timer = setTimeout(() => {
         const err = new Error(`Gemini synthesis operation timed out after ${OVERALL_TIMEOUT_MS}ms`);
@@ -220,53 +227,88 @@ export async function synthesizeResearch(symptomData, pubMedRecords = [], option
       new GoogleGenAI({
         apiKey,
         httpOptions: {
-          timeout: 5000,
+          timeout: 18000,
           retryOptions: {
-            attempts: 2,
-            initialDelay: 1.2,
-            jitter: 0.5,
-            httpStatusCodes: [429, 503]
+            attempts: 1,
+            httpStatusCodes: [503]
           }
         }
       });
 
-    const generatePromise = client.models.generateContent({
-      model,
-      contents: userPrompt,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        responseMimeType: 'application/json',
-        responseSchema: RESPONSE_SCHEMA,
-        temperature: 0.2
+    for (let i = 0; i < modelQueue.length; i++) {
+      const currentModel = modelQueue[i];
+      const remainingTime = OVERALL_TIMEOUT_MS - (Date.now() - startTime);
+      if (remainingTime < 2500) {
+        break;
       }
-    });
 
-    const response = await Promise.race([generatePromise, timeoutPromise]);
-    if (timer) clearTimeout(timer);
-    const responseText = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text;
+      try {
+        const generatePromise = client.models.generateContent({
+          model: currentModel,
+          contents: userPrompt,
+          config: {
+            systemInstruction: SYSTEM_INSTRUCTION,
+            responseMimeType: 'application/json',
+            responseSchema: RESPONSE_SCHEMA,
+            temperature: 0.2
+          }
+        });
 
-    if (!responseText) {
-      return {
-        error: {
-          code: 'GEMINI_EMPTY_RESPONSE',
-          message: 'Gemini returned an empty response.'
+        const response = await Promise.race([generatePromise, timeoutPromise]);
+        const responseText = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!responseText) {
+          lastError = {
+            code: 'GEMINI_EMPTY_RESPONSE',
+            message: 'Gemini returned an empty response.'
+          };
+          continue;
         }
-      };
-    }
 
-    const validationResult = validateAndSanitizeResponse(responseText, validPmidSet);
-    if (validationResult.error) {
-      return { error: validationResult.error };
-    }
+        const validationResult = validateAndSanitizeResponse(responseText, validPmidSet);
+        if (validationResult.error) {
+          lastError = validationResult.error;
+          continue;
+        }
 
-    return {
-      data: {
-        ...validationResult.data,
-        model
+        if (timer) clearTimeout(timer);
+        return {
+          data: {
+            ...validationResult.data,
+            model: currentModel
+          }
+        };
+      } catch (modelErr) {
+        lastError = modelErr;
+        const isCascadeable =
+          modelErr.status === 429 ||
+          modelErr.status === 404 ||
+          modelErr.status === 503 ||
+          modelErr.message?.includes('429') ||
+          modelErr.message?.includes('quota') ||
+          modelErr.message?.includes('RESOURCE_EXHAUSTED') ||
+          modelErr.message?.includes('not found') ||
+          modelErr.message?.includes('UNAVAILABLE');
+
+        if (isCascadeable && i < modelQueue.length - 1) {
+          continue;
+        }
+        throw modelErr;
       }
-    };
+    }
+
+    if (lastError?.code) {
+      return { error: lastError };
+    }
+    throw lastError || new Error('All model candidates failed.');
   } catch (err) {
-    if (err.name === 'TimeoutError' || err.message?.includes('timed out')) {
+    if (
+      err.name === 'TimeoutError' ||
+      err.status === 504 ||
+      err.message?.includes('timed out') ||
+      err.message?.includes('DEADLINE_EXCEEDED') ||
+      err.message?.includes('Deadline expired')
+    ) {
       return {
         error: {
           code: 'GEMINI_TIMEOUT',
@@ -274,7 +316,7 @@ export async function synthesizeResearch(symptomData, pubMedRecords = [], option
         }
       };
     }
-    if (err.status === 429 || err.message?.includes('429') || err.message?.includes('quota')) {
+    if (err.status === 429 || err.message?.includes('429') || err.message?.includes('quota') || err.message?.includes('RESOURCE_EXHAUSTED')) {
       return {
         error: {
           code: 'GEMINI_RATE_LIMITED',

@@ -1,7 +1,19 @@
 import { $, $$, isoToday, researchPapers, state, persist, toast, roleName, user, userAvatar, svg, esc, fmtDate, sessionMedia } from './core.js';
-import { render, go, view, auth, avatarAssets, renderCommunityFeed, renderSymptomIntelligenceResults } from './views.js';
+import {
+  render, go, view, auth, avatarAssets, renderCommunityFeed, renderSymptomIntelligenceResults,
+  renderCommunityVoicesSection, voiceDiscussionModalMarkup, doctorDiscoveryModalMarkup,
+  doctorProfileModalMarkup, renderDoctorCard
+} from './views.js';
 import { openModal, closeModal, pressButton, releaseButton } from './motion.js';
 import { sampleExploreItems, sampleStories, sampleDmConversations, sampleProfileCover, sampleMediaUrl, samplePosterUrl, toggleReelSound } from './community.js';
+import { getVoiceById } from './community-voices-data.js';
+import { getDoctorById, getDoctors } from './doctor-discovery-data.js';
+
+let currentSiMatchedTerms = [];
+let currentVoiceCategory = 'All';
+let currentVoiceLimit = 4;
+let currentDoctorSpecialty = 'All specialties';
+let currentDoctorSearch = '';
 
 const communityPath = (section='home') => ({home:'/community',explore:'/community/explore',reels:'/community/reels',communities:'/community/communities',messages:'/community/messages',notifications:'/community/notifications',profile:'/community/profile'}[section]||'/community');
 
@@ -126,6 +138,85 @@ function toggleFypComments(post,card){
   panel.hidden=false;card.classList.add('comments-open');requestAnimationFrame(()=>panel.classList.add('is-open'));card.querySelectorAll('[data-action="toggle-comments"]').forEach(control=>control.setAttribute('aria-expanded','true'));panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function onAction(button){const action=button.dataset.action,id=button.dataset.id,post=state.posts.find(item=>item.id===id);switch(action){
+  case 'filter-community-voices':{
+    currentVoiceCategory=button.dataset.category||'All';
+    currentVoiceLimit=4;
+    const container=$('#si-community-voices-container');
+    if(container){
+      container.innerHTML=renderCommunityVoicesSection(currentSiMatchedTerms,currentVoiceCategory,currentVoiceLimit);
+    }
+    break;
+  }
+  case 'load-more-voices':{
+    currentVoiceLimit=parseInt(button.dataset.limit,10)||(currentVoiceLimit+4);
+    currentVoiceCategory=button.dataset.category||currentVoiceCategory;
+    const container=$('#si-community-voices-container');
+    if(container){
+      container.innerHTML=renderCommunityVoicesSection(currentSiMatchedTerms,currentVoiceCategory,currentVoiceLimit);
+    }
+    break;
+  }
+  case 'view-voice-discussion':{
+    const voice=getVoiceById(button.dataset.id);
+    if(voice){
+      modal('Community Discussion',voiceDiscussionModalMarkup(voice),'<button type="button" class="btn" data-action="close-modal">Close</button>','voice-detail-modal');
+    }
+    break;
+  }
+  case 'open-doctor-discovery':{
+    modal('Connect with a Doctor',doctorDiscoveryModalMarkup(currentSiMatchedTerms,currentDoctorSpecialty,currentDoctorSearch),'<button type="button" class="btn" data-action="close-modal">Close</button>','doctor-discovery-modal');
+    break;
+  }
+  case 'filter-doctor-specialty':{
+    currentDoctorSpecialty=button.dataset.specialty||'All specialties';
+    const root=$('#modal-root');
+    const body=root?.querySelector('.doctor-discovery-modal-body');
+    if(body){
+      body.parentElement.innerHTML=`<header class="modal-head"><h2>Connect with a Doctor</h2><button class="modal-close" data-action="close-modal" aria-label="Close">×</button></header>${doctorDiscoveryModalMarkup(currentSiMatchedTerms,currentDoctorSpecialty,currentDoctorSearch)}<footer class="modal-actions"><button type="button" class="btn" data-action="close-modal">Close</button></footer>`;
+    }
+    break;
+  }
+  case 'clear-doctor-search':{
+    currentDoctorSearch='';
+    const root=$('#modal-root');
+    const body=root?.querySelector('.doctor-discovery-modal-body');
+    if(body){
+      body.parentElement.innerHTML=`<header class="modal-head"><h2>Connect with a Doctor</h2><button class="modal-close" data-action="close-modal" aria-label="Close">×</button></header>${doctorDiscoveryModalMarkup(currentSiMatchedTerms,currentDoctorSpecialty,currentDoctorSearch)}<footer class="modal-actions"><button type="button" class="btn" data-action="close-modal">Close</button></footer>`;
+    }
+    break;
+  }
+  case 'reset-doctor-filters':{
+    currentDoctorSpecialty='All specialties';
+    currentDoctorSearch='';
+    const root=$('#modal-root');
+    const body=root?.querySelector('.doctor-discovery-modal-body');
+    if(body){
+      body.parentElement.innerHTML=`<header class="modal-head"><h2>Connect with a Doctor</h2><button class="modal-close" data-action="close-modal" aria-label="Close">×</button></header>${doctorDiscoveryModalMarkup(currentSiMatchedTerms,currentDoctorSpecialty,currentDoctorSearch)}<footer class="modal-actions"><button type="button" class="btn" data-action="close-modal">Close</button></footer>`;
+    }
+    break;
+  }
+  case 'view-doctor-profile':{
+    const doc=getDoctorById(button.dataset.id);
+    if(doc){
+      modal(doc.name,doctorProfileModalMarkup(doc),`<button type="button" class="btn" data-action="open-doctor-discovery">← Back to directory</button><button type="button" class="btn primary" data-action="connect-doctor" data-id="${esc(doc.id)}">Connect</button>`,'doctor-profile-modal');
+    }
+    break;
+  }
+  case 'connect-doctor':{
+    const doc=getDoctorById(button.dataset.id);
+    const docName=doc?doc.name:'Doctor';
+    modal('Connect with '+docName,`
+      <div class="doc-disclaimer" style="margin-bottom:14px">
+        ${svg('shield',14)}
+        <span><strong>Demo Directory Notice</strong></span>
+      </div>
+      <p style="font-size:13px;line-height:1.6;color:var(--ink)">
+        Thank you for exploring provider discovery on Vericove. In this prototype preview, active clinician calendar booking and verified telemetry connections are not yet live.<br><br>
+        <strong>No appointment was booked, and no payment was processed.</strong> When connected, you will be able to share your consultation summary reports directly with verified clinicians.
+      </p>
+    `,'<button type="button" class="btn primary" data-action="close-modal">Understood</button>','connect-notice-modal');
+    break;
+  }
   case 'pick-journal-symptom':{if(!state.entries?.length){toast('No journal entries logged yet');break;}const items=state.entries.map((entry,idx)=>`<button type="button" class="record topic" data-action="apply-journal-symptom" data-entry-idx="${idx}" style="width:100%;text-align:left;cursor:pointer;margin-bottom:7px"><span class="record-main"><strong class="record-title">${esc(entry.symptom)}</strong><small class="record-desc">${fmtDate(entry.date)}${entry.time?` · ${esc(entry.time)}`:''} · ${esc(entry.severity)} · ${esc(entry.duration||'Duration not noted')}</small></span>${svg('arrow',14)}</button>`).join('');modal('Select from journal',`<p class="modal-intro">Choose an entry to populate the symptom description, duration and severity fields. Your journal remains read-only.</p><div class="record-list" style="max-height:360px;overflow-y:auto">${items}</div>`);break;}
   case 'apply-journal-symptom':{const idx=Number(button.dataset.entryIdx),entry=state.entries?.[idx];if(entry){const symptomField=$('#si-symptom'),durationField=$('#si-duration'),severityField=$('#si-severity');if(symptomField)symptomField.value=entry.symptom+(entry.note?` - ${entry.note}`:'');if(durationField)durationField.value=entry.duration||'';if(severityField)severityField.value=entry.severity||'Moderate';dismissModal();toast('Symptom loaded from journal');}break;}
   case 'log-symptom':logSymptom();break;
@@ -358,10 +449,11 @@ document.addEventListener('submit',event=>{
             </div>`;
           }
         } else if(resJson.data){
+          currentSiMatchedTerms=resJson.data.matchedTerms||resJson.data.pubmed?.matchedTerms||[];
           renderSymptomIntelligenceResults(resJson.data);
           const card=$('.si-results-card');
           if(card)card.scrollIntoView({behavior:'smooth',block:'start'});
-          toast('Research intelligence synthesis complete');
+          toast(resJson.data.gemini ? 'Research intelligence synthesis complete' : 'PubMed citations retrieved');
         }
       }catch(err){
         toast('Network error while connecting to research service.');
@@ -408,6 +500,18 @@ function refreshExploreSuggestions(raw=''){
   panel.hidden=false;
 }
 document.addEventListener('input',event=>{
+  if(event.target.id==='doctor-discovery-search'){
+    currentDoctorSearch=event.target.value;
+    const listContainer=$('#doctor-results-list');
+    if(listContainer){
+      const docs=getDoctors(currentSiMatchedTerms,currentDoctorSpecialty,currentDoctorSearch);
+      if(docs.length>0){
+        listContainer.innerHTML=`<div class="doctor-grid">${docs.map(doc=>renderDoctorCard(doc)).join('')}</div>`;
+      } else {
+        listContainer.innerHTML=`<div class="empty-state" style="padding:32px 16px"><span style="display:inline-flex;margin-bottom:8px;color:var(--plum)">${svg('user',24)}</span><strong>No doctor profiles found</strong><p>No profiles match "${esc(currentDoctorSearch)}". Try selecting "All specialties" or clearing your search.</p><button type="button" class="btn small" data-action="reset-doctor-filters">Reset filters</button></div>`;
+      }
+    }
+  }
   if(event.target.matches('[data-dm-search]')){$$('.vc-dm-thread').forEach(thread=>thread.hidden=!thread.textContent.toLowerCase().includes(event.target.value.trim().toLowerCase()));}
   if(event.target.id==='doctor-search'){const query=event.target.value.toLowerCase();$$('[data-doctor]').forEach(card=>card.hidden=!card.dataset.doctor.includes(query));}
 });

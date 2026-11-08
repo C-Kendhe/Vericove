@@ -9,6 +9,8 @@
 import { queryPubMed } from './lib/pubmed.js';
 import { synthesizeResearch } from './lib/gemini.js';
 
+export const maxDuration = 30;
+
 const MAX_PAYLOAD_BYTES = 10240; // 10 KB limit
 const MAX_SYMPTOM_LENGTH = 1000;
 const MAX_DURATION_LENGTH = 100;
