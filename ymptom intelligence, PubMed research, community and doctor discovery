@@ -1,0 +1,8 @@
+ api/lib/gemini.js            | 118 [32m+++++++++[m[31m-----[m
+ api/symptom-intelligence.js  |   2 [32m+[m
+ src/community-voices-data.js | 368 [32m+++++++++++++++++++++++++++++++++++++++++++[m
+ src/doctor-discovery-data.js | 368 [32m+++++++++++++++++++++++++++++++++++++++++++[m
+ src/interactions.js          | 108 [32m++++++++++++[m[31m-[m
+ src/views.js                 | 274 [32m+++++++++++++++++++++++++++++++[m[31m-[m
+ styles.css                   |  62 [32m++++++++[m
+ 7 files changed, 1259 insertions(+), 41 deletions(-)

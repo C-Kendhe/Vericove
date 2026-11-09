@@ -46,13 +46,14 @@ const iconPaths = {
   video:'<rect x="3" y="6" width="13" height="12" rx="3"/><path d="m16 10 5-3v10l-5-3"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
   edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>',
+  trash:'<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/>',
 };
 export const svg = (name, size=17) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${iconPaths[name]||iconPaths.spark}</svg>`;
 export const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const initials = name => String(name||'A').split(/\s+/).slice(0,2).map(part=>part[0]?.toUpperCase()||'').join('');
 const defaultState = () => ({
   session:{loggedIn:false,demo:true,name:'',email:'',role:'patient',handle:'QuietRiver',avatarTone:''},
-  route:'dashboard',
+  route:'community',
   entries:[
     {id:1,symptom:'Pelvic discomfort',date:isoToday,time:'9:20 AM',severity:'Moderate',duration:'About 2 hours',note:'More noticeable after a restless night.'},
     {id:2,symptom:'Low energy',date:'2026-11-01',time:'2:10 PM',severity:'Mild',duration:'Most of the afternoon',note:'Energy felt lower than usual.'},
@@ -88,6 +89,7 @@ const defaultState = () => ({
   viewedSampleStories:[],
   storyLikes:[],
   consent:{researchMatching:false,sharedReports:false},
+  journalFilter:'All',
   profile:{location:'Boston, MA',specialty:'',privacy:true}
 });
 export let state;
@@ -105,7 +107,8 @@ state.stories ||= [];
 state.communityView ||= 'FYP';
 state.savedPapers ||= [];
 state.reports ||= [];
-state.route ||= 'dashboard';
+state.journalFilter ||= 'All';
+if (!state.route || state.route === 'dashboard') state.route = 'community';
 export const persist = () => localStorage.setItem(STORE, JSON.stringify(state));
 export const app = $('#app');
 let toastTimer;

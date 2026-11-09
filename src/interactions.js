@@ -220,6 +220,52 @@ function onAction(button){const action=button.dataset.action,id=button.dataset.i
   case 'pick-journal-symptom':{if(!state.entries?.length){toast('No journal entries logged yet');break;}const items=state.entries.map((entry,idx)=>`<button type="button" class="record topic" data-action="apply-journal-symptom" data-entry-idx="${idx}" style="width:100%;text-align:left;cursor:pointer;margin-bottom:7px"><span class="record-main"><strong class="record-title">${esc(entry.symptom)}</strong><small class="record-desc">${fmtDate(entry.date)}${entry.time?` · ${esc(entry.time)}`:''} · ${esc(entry.severity)} · ${esc(entry.duration||'Duration not noted')}</small></span>${svg('arrow',14)}</button>`).join('');modal('Select from journal',`<p class="modal-intro">Choose an entry to populate the symptom description, duration and severity fields. Your journal remains read-only.</p><div class="record-list" style="max-height:360px;overflow-y:auto">${items}</div>`);break;}
   case 'apply-journal-symptom':{const idx=Number(button.dataset.entryIdx),entry=state.entries?.[idx];if(entry){const symptomField=$('#si-symptom'),durationField=$('#si-duration'),severityField=$('#si-severity');if(symptomField)symptomField.value=entry.symptom+(entry.note?` - ${entry.note}`:'');if(durationField)durationField.value=entry.duration||'';if(severityField)severityField.value=entry.severity||'Moderate';dismissModal();toast('Symptom loaded from journal');}break;}
   case 'log-symptom':logSymptom();break;
+  case 'toggle-entry-menu':{
+    const entryId=button.dataset.id;
+    const dropdown=$(`#entry-menu-${entryId}`);
+    const wasOpen=dropdown&&!dropdown.hidden;
+    $$('.entry-menu-dropdown').forEach(menu=>{menu.hidden=true;});
+    $$('.entry-menu-trigger').forEach(trigger=>{trigger.setAttribute('aria-expanded','false');});
+    if(dropdown&&!wasOpen){
+      dropdown.hidden=false;
+      button.setAttribute('aria-expanded','true');
+    }
+    break;
+  }
+  case 'prompt-delete-entry':{
+    const entryId=button.dataset.id;
+    $$('.entry-menu-dropdown').forEach(menu=>{menu.hidden=true;});
+    $$('.entry-menu-trigger').forEach(trigger=>{trigger.setAttribute('aria-expanded','false');});
+    const entry=(state.entries||[]).find(e=>String(e.id)===String(entryId));
+    if(!entry){toast('Entry could not be found');break;}
+    modal(
+      'Delete entry',
+      `<div class="delete-entry-modal-content"><p class="delete-confirm-title">Are you sure you want to delete this entry?</p><p class="modal-intro">This action cannot be undone. The symptom note will be permanently removed from your health journal.</p><div class="delete-entry-preview"><strong>${esc(entry.symptom)}</strong><span>${fmtDate(entry.date)}${entry.time?` · ${esc(entry.time)}`:''} · ${esc(entry.severity)}</span>${entry.note?`<p>${esc(entry.note)}</p>`:''}</div></div>`,
+      `<button type="button" class="btn" data-action="close-modal">Cancel</button><button type="button" class="btn danger" data-action="confirm-delete-entry" data-id="${esc(entry.id)}">Delete entry</button>`,
+      'delete-confirm-sheet'
+    );
+    break;
+  }
+  case 'confirm-delete-entry':{
+    const entryId=button.dataset.id;
+    if(entryId===undefined||entryId===null||entryId===''){
+      dismissModal();
+      toast('Invalid entry ID');
+      break;
+    }
+    const initialCount=(state.entries||[]).length;
+    state.entries=(state.entries||[]).filter(e=>String(e.id)!==String(entryId));
+    if(state.entries.length===initialCount){
+      dismissModal();
+      toast('Entry could not be found');
+      break;
+    }
+    persist();
+    dismissModal();
+    render();
+    toast('Journal entry deleted');
+    break;
+  }
   case 'compose':buttonCommunityName=button.dataset.communityName||'';composePost(button.dataset.kind||'Question');break;
   case 'compose-video':buttonCommunityName=button.dataset.communityName||'';composePost('Video');break;
   case 'reel-next':case 'reel-prev':{const card=button.closest('[data-reel-card]'),next=action==='reel-next'?card?.nextElementSibling:card?.previousElementSibling;next?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});break;}
@@ -303,7 +349,7 @@ function onAction(button){const action=button.dataset.action,id=button.dataset.i
   case 'avatar-reset':{const fallback=avatarAssets.find(asset=>asset.path.endsWith('/Jaime.jpg'))||avatarAssets[0];avatarDraft={src:fallback?.url||'',kind:'preset',crop:{x:50,y:50,zoom:1}};$$('[data-avatar-option]').forEach(option=>option.classList.toggle('selected',option.dataset.avatarOption===avatarDraft.src));updateAvatarTray();break;}
   case 'avatar-cancel':avatarDraft=null;dismissModal();break;
   case 'avatar-confirm':{if(!avatarDraft?.src){toast('Choose a profile picture first');break;}const selection={avatar:avatarDraft.src,avatarCrop:{...avatarDraft.crop}};if(avatarTarget==='signup'){auth.draft.avatar=selection.avatar;auth.draft.avatarCrop=selection.avatarCrop;const button=$('.avatar-launch-preview');if(button)button.innerHTML=`<img src="${esc(selection.avatar)}" alt="" style="object-position:${selection.avatarCrop.x}% ${selection.avatarCrop.y}%;transform:scale(${selection.avatarCrop.zoom})"/>`;const preview=$('.profile-mini-preview>img');if(preview){preview.src=selection.avatar;preview.style.objectPosition=`${selection.avatarCrop.x}% ${selection.avatarCrop.y}%`;preview.style.transform=`scale(${selection.avatarCrop.zoom})`;}}else{state.session.avatar=selection.avatar;state.session.avatarCrop=selection.avatarCrop;persist();}avatarDraft=null;dismissModal();if(avatarTarget==='profile'){render();toast('Profile picture saved on this device');}break;}
-  case 'complete-signup':{if(!$('#privacy-check')?.checked){toast('Please confirm this local prototype profile');break;}const d=auth.draft;state.session={loggedIn:true,remembered:true,demo:true,name:d.name||'Alex Morgan',displayName:d.displayName||d.name||'Alex Morgan',email:d.email||'',ageGroup:d.ageGroup||'',gender:d.gender||'',location:d.location||'',role:d.role||'patient',handle:d.handle||'QuietRiver',avatar:d.avatar||'',avatarCrop:d.avatarCrop||{x:50,y:50,zoom:1},banner:d.banner||'warm',bannerImage:d.bannerImage||'',bio:d.bio||'',interests:d.interests||[],specialty:d.specialty||'',institution:d.institution||'',privacy:d.privacy||{},anonymous:d.anonymous!==false,followers:[],following:[]};state.route='dashboard';persist();render();toast('Your profile is ready in this browser preview');break;}
+  case 'complete-signup':{if(!$('#privacy-check')?.checked){toast('Please confirm this local prototype profile');break;}const d=auth.draft;state.session={loggedIn:true,remembered:true,demo:true,name:d.name||'Alex Morgan',displayName:d.displayName||d.name||'Alex Morgan',email:d.email||'',ageGroup:d.ageGroup||'',gender:d.gender||'',location:d.location||'',role:d.role||'patient',handle:d.handle||'QuietRiver',avatar:d.avatar||'',avatarCrop:d.avatarCrop||{x:50,y:50,zoom:1},banner:d.banner||'warm',bannerImage:d.bannerImage||'',bio:d.bio||'',interests:d.interests||[],specialty:d.specialty||'',institution:d.institution||'',privacy:d.privacy||{},anonymous:d.anonymous!==false,followers:[],following:[]};state.route='community';persist();render();toast('Your profile is ready in this browser preview');break;}
   case 'onboard-back':auth.step=Math.max(1,auth.step-1);render();break;
   case 'onboard-next':{const d=auth.draft;if(auth.step===2&&!d.role){toast('Choose how you’d like to be part of Vericove');break;}if(auth.step===3){d.displayName=$('#display-name')?.value.trim()||d.name;d.handle=$('#username')?.value.trim().replace(/^@/,'')||d.name?.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,20)||'member';d.bio=$('#profile-bio')?.value.trim()||'';d.specialty=$('[name="specialty"]')?.value.trim()||'';d.institution=$('[name="institution"]')?.value.trim()||'';}if(auth.step===4)d.anonymous=$('#anonymous-posting')?.checked??true;auth.step=Math.min(5,auth.step+1);render();break;}
   case 'profile-preview':{const p=user(),privacy=p.privacy||{},visible=key=>privacy[key]==='Public',display=visible('display')?(p.displayName||p.name):'Vericove member',avatar=visible('avatar')&&p.avatar?`<img class="public-preview-avatar" src="${esc(p.avatar)}" alt="Profile picture"/>`:'<span class="public-preview-avatar fallback">VC</span>',bio=visible('bio')&&p.bio?`<p>${esc(p.bio)}</p>`:'',interests=visible('interests')?(p.interests||[]).map(item=>`<span>${esc(item)}</span>`).join(''):'';modal('Public profile preview',`<div class="public-profile-preview"><div class="public-preview-cover banner-${esc(p.banner||'warm')}" ${p.bannerImage?`style="background-image:url('${esc(p.bannerImage)}')"`:''}></div>${avatar}<h3>${esc(display)}</h3><small>@${esc(p.handle||'member')}</small>${bio}<div class="final-interests">${interests||'<span>Interests are private</span>'}</div><div class="preview-privacy">${svg('eye',14)} Preview of information set to Public. Followers-only details remain hidden from visitors.</div></div>`,'','profile-sheet');break;}
@@ -314,14 +360,18 @@ function onAction(button){const action=button.dataset.action,id=button.dataset.i
   case 'report-profile':dismissModal();toast('Profile reports require a connected moderation service');break;
   case 'profile-count':{const list=button.dataset.list,session=user();if(list==='posts'){auth.mode='login';toast(`${state.posts.filter(post=>post.ownerHandle===session.handle).length} posts on this profile`);break;}const relations=state.profileFollows||[];const names=list==='followers'?relations.filter(item=>item.to===session.handle).map(item=>item.from):relations.filter(item=>item.from===session.handle).map(item=>item.to);modal(list==='followers'?'Followers':'Following',names.length?`<div class="record-list">${names.map(name=>`<div class="record"><span class="record-main"><strong class="record-title">${esc(name)}</strong></span>${list==='following'?`<button class="btn small" data-action="unfollow-member" data-name="${esc(name)}">Following</button>`:''}</div>`).join('')}</div>`:`<p class="modal-intro">${list==='followers'?'No one follows this profile yet.':'You are not following any profiles yet.'}</p>`);break;}
   case 'unfollow-member':{const name=button.dataset.name;state.session.following=(state.session.following||[]).filter(item=>item!==name);state.profileFollows=(state.profileFollows||[]).filter(item=>!(item.from===user().handle&&item.to===name));persist();dismissModal();render();toast(`Unfollowed ${name}`);break;}
-  case 'demo-signin':{const role=$('#workspace-role')?.value||'patient',names={patient:'Alex Morgan',doctor:'Demo Doctor',researcher:'Demo Researcher',explorer:'Guest Explorer'};state.session={loggedIn:true,remembered:true,demo:true,name:names[role]||names.patient,email:'',role,handle:role==='patient'?'QuietRiver':names[role].replaceAll(' ','')};if(!state.route)state.route='dashboard';persist();render();toast(`${roleName(role)} workspace is ready and remembered on this device`);break;}
-  case 'signout':dismissModal();state.session.loggedIn=false;state.session.remembered=false;state.route='dashboard';persist();auth.mode='landing';render();break;
+  case 'demo-signin':{const role=$('#workspace-role')?.value||'patient',names={patient:'Alex Morgan',doctor:'Demo Doctor',researcher:'Demo Researcher',explorer:'Guest Explorer'};state.session={loggedIn:true,remembered:true,demo:true,name:names[role]||names.patient,email:'',role,handle:role==='patient'?'QuietRiver':names[role].replaceAll(' ','')};if(!state.route||state.route==='dashboard')state.route='community';persist();render();toast(`${roleName(role)} workspace is ready and remembered on this device`);break;}
+  case 'signout':dismissModal();state.session.loggedIn=false;state.session.remembered=false;state.route='community';persist();auth.mode='landing';render();break;
   default:break;
 }}
 
 function rolePicker(){modal('Choose a workspace',`<p class="modal-intro">Switch the sample workspace to preview the different role-based experiences in the architecture.</p><div class="role-options">${[['patient','Patient','Symptom intelligence and care navigation'],['doctor','Doctor','Professional workspace and verification'],['researcher','Researcher','Publications and collaboration'],['explorer','Public explorer','Public research and community']].map(([role,label,desc])=>`<button type="button" class="role-option ${user().role===role?'selected':''}" data-switch-role="${role}"><strong>${label}</strong><small>${desc}</small></button>`).join('')}</div><div class="research-sidebar-box"><strong>Demo role switching</strong>These role changes are local previews and do not create separate secured accounts.</div>`)}
 
 document.addEventListener('click',event=>{
+  if(!event.target.closest('.entry-menu-wrap')){
+    $$('.entry-menu-dropdown').forEach(menu=>{menu.hidden=true;});
+    $$('.entry-menu-trigger').forEach(trigger=>{trigger.setAttribute('aria-expanded','false');});
+  }
   const clickedAction=event.target.closest('button');
   if(clickedAction){const action=clickedAction.dataset.action;playUiSound(clickedAction.dataset.communitySection==='notifications'?'notify':action==='vote'?'like':action==='send'||action==='dm-share-select'?'send':clickedAction.hasAttribute('data-community-section')||clickedAction.hasAttribute('data-route')?'nav':'tap');}
   const dmThread=event.target.closest('[data-dm-thread]');
@@ -352,14 +402,14 @@ document.addEventListener('click',event=>{
   const routeButton=event.target.closest('[data-route]');
   if(routeButton){event.preventDefault();const route=routeButton.dataset.route;if(!state.session?.loggedIn){state.route=route;persist();view('login');return;}go(route);return;}
   const viewButton=event.target.closest('[data-view]');
-  if(viewButton){event.preventDefault();if(viewButton.dataset.view==='signup'&&state.session?.loggedIn&&auth.mode==='landing'){state.route='dashboard';persist();view('workspace');return;}if(viewButton.dataset.view==='signup'){auth.step=1;auth.draft={role:'patient'};}view(viewButton.dataset.view);return;}
+  if(viewButton){event.preventDefault();if(viewButton.dataset.view==='signup'&&state.session?.loggedIn&&auth.mode==='landing'){state.route='community';persist();view('workspace');return;}if(viewButton.dataset.view==='signup'){auth.step=1;auth.draft={role:'patient'};}view(viewButton.dataset.view);return;}
   const roleOption=event.target.closest('[data-role]');
   if(roleOption){auth.draft.role=roleOption.dataset.role;$$('.account-type').forEach(option=>{const selected=option.dataset.role===auth.draft.role;option.classList.toggle('selected',selected);const check=option.querySelector('i');if(check)check.textContent=selected?'✓':'';});return;}
   const avatarOption=event.target.closest('[data-avatar-option]');if(avatarOption){avatarDraft={src:avatarOption.dataset.avatarOption,kind:'preset',crop:{x:50,y:50,zoom:1}};$$('[data-avatar-option]').forEach(option=>option.classList.toggle('selected',option===avatarOption));updateAvatarTray();return;}
   const bannerOption=event.target.closest('[data-banner]');if(bannerOption){auth.draft.banner=bannerOption.dataset.banner;auth.draft.bannerImage='';$$('[data-banner]').forEach(option=>option.classList.toggle('selected',option===bannerOption));const mini=$('.mini-banner');if(mini){mini.className=`mini-banner banner-${auth.draft.banner}`;mini.style.backgroundImage='';}return;}
   const interestOption=event.target.closest('[data-interest]');if(interestOption){const interest=interestOption.dataset.interest;auth.draft.interests||=[];auth.draft.interests=auth.draft.interests.includes(interest)?auth.draft.interests.filter(item=>item!==interest):[...auth.draft.interests,interest];interestOption.classList.toggle('selected',auth.draft.interests.includes(interest));return;}
   const roleSwitch=event.target.closest('[data-switch-role]');
-  if(roleSwitch){state.session.role=roleSwitch.dataset.switchRole;state.session.name=({patient:'Alex Morgan',doctor:'Demo Doctor',researcher:'Demo Researcher',explorer:'Guest Explorer'}[state.session.role]);state.session.handle=state.session.role==='patient'?'QuietRiver':state.session.name.replaceAll(' ','');state.route='dashboard';persist();render();toast(`${roleName(state.session.role)} workspace preview`);return;}
+  if(roleSwitch){state.session.role=roleSwitch.dataset.switchRole;state.session.name=({patient:'Alex Morgan',doctor:'Demo Doctor',researcher:'Demo Researcher',explorer:'Guest Explorer'}[state.session.role]);state.session.handle=state.session.role==='patient'?'QuietRiver':state.session.name.replaceAll(' ','');state.route='community';persist();render();toast(`${roleName(state.session.role)} workspace preview`);return;}
   const profileTab=event.target.closest('[data-profile-tab]');if(profileTab){state.profileTab=profileTab.dataset.profileTab;persist();render();return;}
   const actionButton=event.target.closest('[data-action]');
   if(actionButton){event.preventDefault();onAction(actionButton);return;}
@@ -372,7 +422,12 @@ document.addEventListener('click',event=>{
   const careFilter=event.target.closest('[data-care-filter]');
   if(careFilter){$$('[data-care-filter]').forEach(button=>button.classList.toggle('active',button===careFilter));const filter=careFilter.dataset.careFilter.toLowerCase();$$('[data-doctor]').forEach(card=>card.hidden=filter!=='all providers'&&!card.dataset.doctor.includes(filter));return;}
   const journalFilter=event.target.closest('[data-filter]');
-  if(journalFilter){$$('[data-filter]').forEach(button=>button.classList.toggle('active',button===journalFilter));const key=journalFilter.dataset.filter;const entries=key==='Notes'?state.entries.filter(entry=>entry.note):key==='Medication'?[]:state.entries;const list=$('.entry-list');if(list)list.innerHTML=entries.map(entry=>`<article class="entry"><span class="entry-icon">${svg('pulse',15)}</span><div class="entry-main"><div class="entry-title">${esc(entry.symptom)}</div><div class="entry-meta">${fmtDate(entry.date)}${entry.time?` · ${esc(entry.time)}`:''} · ${esc(entry.duration||'Duration not recorded')}</div>${entry.note?`<div class="entry-note">${esc(entry.note)}</div>`:''}</div><div class="entry-side"><span class="severity ${entry.severity.toLowerCase()}">${esc(entry.severity)}</span></div></article>`).join('')||emptyState(key==='Medication'?'No medication notes yet':'No notes in this view','Add a journal entry when you would like to capture something.');return;}
+  if(journalFilter){
+    state.journalFilter=journalFilter.dataset.filter;
+    persist();
+    render();
+    return;
+  }
 });
 
 document.addEventListener('submit',event=>{
@@ -383,7 +438,7 @@ document.addEventListener('submit',event=>{
     event.preventDefault();const data=Object.fromEntries(new FormData(form));
     if(auth.mode==='signup'){auth.draft={...auth.draft,...data};auth.step=2;render();return;}
     if(auth.mode==='forgot'){toast('Password reset requires a connected account service.');return;}
-    const email=String(data.email||'');const proposedName=email.split('@')[0].split(/[._-]/).map(s=>s?`${s[0].toUpperCase()}${s.slice(1)}`:'').join(' ')||'Alex Morgan';const allowedRoles=['patient','doctor','researcher','explorer'];const role=allowedRoles.includes(data.role)?data.role:'patient';state.session={loggedIn:true,remembered:true,demo:true,name:proposedName,email,role,handle:role==='patient'?'QuietRiver':proposedName.replaceAll(' ','')};if(!state.route)state.route='dashboard';persist();render();toast(`${roleName(role)} workspace remembered on this device`);return;
+    const email=String(data.email||'');const proposedName=email.split('@')[0].split(/[._-]/).map(s=>s?`${s[0].toUpperCase()}${s.slice(1)}`:'').join(' ')||'Alex Morgan';const allowedRoles=['patient','doctor','researcher','explorer'];const role=allowedRoles.includes(data.role)?data.role:'patient';state.session={loggedIn:true,remembered:true,demo:true,name:proposedName,email,role,handle:role==='patient'?'QuietRiver':proposedName.replaceAll(' ','')};if(!state.route||state.route==='dashboard')state.route='community';persist();render();toast(`${roleName(role)} workspace remembered on this device`);return;
   }
   if(form.id==='symptom-form'){
     event.preventDefault();const data=Object.fromEntries(new FormData(form));state.entries.unshift({id:Date.now(),symptom:data.symptom,date:data.date||isoToday,time:new Intl.DateTimeFormat('en',{hour:'numeric',minute:'2-digit'}).format(new Date()),severity:data.severity,duration:data.duration||'Duration not noted',note:data.note||''});persist();dismissModal();render();toast('Added to this browser demo');return;
@@ -562,5 +617,15 @@ document.addEventListener('pointerup',event=>{const button=event.target.closest(
 document.addEventListener('pointercancel',event=>{const button=event.target.closest('button');if(button)releaseButton(button);});
 document.addEventListener('pointerover',event=>{if(event.pointerType==='touch')return;const card=event.target.closest('.vc-discovery-card.is-video');if(!card||card.contains(event.relatedTarget))return;card.querySelector('[data-explore-video]')?.play().catch(()=>{});});
 document.addEventListener('pointerout',event=>{const card=event.target.closest('.vc-discovery-card.is-video');if(!card||card.contains(event.relatedTarget))return;const video=card.querySelector('[data-explore-video]');if(video){video.pause();try{video.currentTime=0;}catch{}}});
-document.addEventListener('keydown',event=>{const dialog=$('.explore-detail-sheet');if(event.key==='Tab'&&dialog){const controls=[...dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(control=>!control.closest('[hidden]')&&control.getClientRects().length);if(controls.length){const first=controls[0],last=controls[controls.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}return;}if(event.key!=='Escape')return;if(dialog?.classList.contains('has-comments')){toggleExploreComments(false);event.preventDefault();return;}dismissModal();});
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'){
+    const openMenu=$('.entry-menu-dropdown:not([hidden])');
+    if(openMenu){
+      $$('.entry-menu-dropdown').forEach(menu=>{menu.hidden=true;});
+      $$('.entry-menu-trigger').forEach(trigger=>{trigger.setAttribute('aria-expanded','false');});
+      event.preventDefault();
+      return;
+    }
+  }
+  const dialog=$('.explore-detail-sheet');if(event.key==='Tab'&&dialog){const controls=[...dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(control=>!control.closest('[hidden]')&&control.getClientRects().length);if(controls.length){const first=controls[0],last=controls[controls.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}return;}if(event.key!=='Escape')return;if(dialog?.classList.contains('has-comments')){toggleExploreComments(false);event.preventDefault();return;}dismissModal();});
 
