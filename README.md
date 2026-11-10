@@ -1,47 +1,296 @@
-# Vericove
+# 🌸 Vericove
+### Women's Healthcare. Informed by Research. Strengthened by Community.
 
-Vericove is a responsive, browser-based prototype for the women's health, research and community ecosystem described in the project notes.
+<p align="center">
+  <strong>An AI-powered women's healthcare platform bringing together intelligent symptom insights, biomedical research, healthcare discovery, and supportive communities.</strong>
+</p>
 
-## Run locally
+<p align="center">
+  <a href="https://vericove-eta.vercel.app/">
+    <img src="https://img.shields.io/badge/Live%20Demo-Vericove-765477?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo">
+  </a>
+  <img src="https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript">
+  <img src="https://img.shields.io/badge/Vite-Frontend-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
+  <img src="https://img.shields.io/badge/Google%20Gemini-AI-4285F4?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Gemini">
+  <img src="https://img.shields.io/badge/PubMed-Biomedical%20Research-326599?style=for-the-badge" alt="PubMed">
+  <img src="https://img.shields.io/badge/Deployment-Vercel-black?style=for-the-badge&logo=vercel" alt="Vercel">
+</p>
 
-Requirements: Node.js 20.19+ or 22.12+ and npm.
+---
 
-```powershell
+## ✨ Overview
+
+Women's health information is often fragmented across medical resources, personal experiences, and online communities.
+
+**Vericove** aims to bring these elements together in one accessible digital space.
+
+It combines an interactive women's health workspace with AI-assisted research exploration, biomedical literature retrieval, healthcare discovery, and a community experience designed to encourage informed conversations.
+
+Rather than replacing healthcare professionals, Vericove focuses on helping users explore health-related information and prepare more meaningful questions for professional consultations.
+
+## 🚀 Key Features
+
+### 🧠 AI Symptom Intelligence
+
+Explore symptom-related biomedical research through an integrated AI research workflow.
+
+- Describe symptoms, duration, and severity.
+- Retrieve relevant biomedical publications from **PubMed**.
+- Use **Google Gemini** to synthesize educational insights.
+- Explore biological context and relevant research findings.
+- Generate questions to discuss with healthcare professionals.
+- Display study limitations and research context.
+- Include medical safety boundaries and user consent.
+
+### 🔬 Biomedical Research Discovery
+
+- Search biomedical literature using PubMed E-utilities.
+- Retrieve publication metadata and available abstracts.
+- Display publication titles, authors, dates, and source links.
+- Connect AI-generated explanations to retrieved research.
+- Distinguish literature retrieval from individualized medical conclusions.
+
+### 💬 Vericove Community
+
+A dedicated community experience for sharing perspectives and discovering supportive conversations.
+
+- Community feeds with For You and Following views.
+- Stories and image-led content discovery.
+- Topic-based communities.
+- Post creation, discussions, polls, and replies.
+- Likes, saves, sharing, and community interactions.
+- Search and category-based discovery.
+
+### 🩺 Personal Health Workspace
+
+- Symptom journal and health entries.
+- Health timeline and records.
+- Treatment notes.
+- AI Symptom Intelligence workspace.
+- Consultation preparation and summary previews.
+
+### 👩‍⚕️ Healthcare Discovery
+
+- Healthcare professional directory interface.
+- Doctor and researcher profile previews.
+- Specialty-based discovery.
+- Patient-experience and review interface.
+- Professional verification workflow previews.
+
+### 🎨 Responsive User Experience
+
+- Clean healthcare-inspired interface.
+- Custom purple-themed design system.
+- Responsive desktop and mobile navigation.
+- Interactive dashboards and workspace layouts.
+- Dedicated community application interface.
+
+---
+
+## 🏗️ System Architecture
+
+Vericove uses a vanilla JavaScript frontend with Vite and serverless API functions for AI-powered research workflows.
+
+```mermaid
+flowchart TD
+    A["User"] --> B["Vericove Frontend"]
+    B --> C["Vite Application"]
+    C --> D["Vercel Serverless API"]
+    D --> E["Input Validation & Consent"]
+    E --> F["Biomedical Term Extraction"]
+    F --> G["NCBI PubMed E-utilities"]
+    G --> H["Retrieved Publications"]
+    H --> I["Google Gemini API"]
+    I --> J["Research Synthesis"]
+    J --> K["Structured API Response"]
+    K --> L["Vericove Research Dashboard"]
+```
+
+### AI Research Workflow
+
+1. The user submits symptom information after accepting the research-sharing disclosure.
+2. The backend validates the request and consent.
+3. Relevant biomedical search terms are extracted.
+4. PubMed retrieves matching publications and available abstracts.
+5. Gemini generates educational research synthesis grounded in retrieved literature.
+6. The frontend presents biological context, research findings, consultation questions, and limitations.
+
+**Important:** PubMed retrieval happens before AI synthesis so that the research output can be grounded in retrieved publications rather than invented citations.
+
+---
+
+## 🛠️ Technology Stack
+
+| Category | Technologies |
+|---|---|
+| Frontend | HTML5, CSS3, JavaScript (ES6+) |
+| Frontend tooling | Vite |
+| Backend | Vercel Serverless Functions, Node.js |
+| AI integration | Google Gemini API |
+| AI SDK | `@google/genai` |
+| Biomedical research | NCBI PubMed E-utilities |
+| XML processing | fast-xml-parser |
+| Deployment | Vercel |
+| Version control | Git & GitHub |
+
+---
+
+## 📂 Project Structure
+
+```text
+Vericove/
+│
+├── api/
+│   ├── lib/
+│   │   ├── gemini.js
+│   │   └── pubmed.js
+│   └── symptom-intelligence.js
+│
+├── assets/
+├── public/
+│   └── assets/
+│
+├── src/
+│   ├── app.js
+│   ├── core.js
+│   ├── navigation.js
+│   ├── views.js
+│   ├── interactions.js
+│   └── community.js
+│
+├── docs/
+├── index.html
+├── styles.css
+├── server.mjs
+├── package.json
+├── package-lock.json
+├── .env.example
+└── README.md
+```
+
+---
+
+## ⚙️ Getting Started
+
+### Prerequisites
+
+Make sure you have installed:
+
+- [Node.js](https://nodejs.org/) — 20.19+ or 22.12+
+- npm
+- [Git](https://git-scm.com/)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/C-Kendhe/Vericove.git
+```
+
+### 2. Navigate to the project
+
+```bash
+cd Vericove
+```
+
+### 3. Install dependencies
+
+```bash
 npm install
+```
+
+### 4. Configure environment variables
+
+Create a `.env.local` file in the project root.
+
+```env
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-3.8-flash
+
+NCBI_EMAIL=your_email@example.com
+NCBI_TOOL=vericove_symptom_intelligence
+
+# Optional
+NCBI_API_KEY=your_ncbi_api_key
+```
+
+**Environment variable information:**
+
+| Variable | Purpose |
+|---|---|
+| `GEMINI_API_KEY` | Google Gemini API authentication |
+| `GEMINI_MODEL` | Gemini model identifier |
+| `NCBI_EMAIL` | Required NCBI developer contact email |
+| `NCBI_TOOL` | Application identifier for NCBI requests |
+| `NCBI_API_KEY` | Optional NCBI API key for higher request limits |
+
+Never commit `.env.local` or expose API keys in frontend code.
+
+### 5. Run the application
+
+For frontend-only development:
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:4173](http://localhost:4173). Signed-out visitors see the public homepage first. Choose **Log in** or **Get started** to continue; the sign-in screen lets you preview the patient, doctor, researcher or public-explorer workspace. A successful demo sign-in is remembered in this browser, so the next visit opens that workspace. Sign out to return to the public homepage.
+For the complete application, including Vercel serverless API functions:
 
-## Current product areas
+```bash
+npx vercel dev
+```
 
-- Public landing, sign-in and password-reset preview screens, plus a five-step account onboarding flow for individuals, doctors and researchers.
-- Profile identity setup with the 19 bundled `assets/PFPs/` images, custom avatar and cover previews, editable bios and interests, and profile visibility controls.
-- Social profile pages backed by the existing local community posts, with post editing, follow controls, follower counts, and a nonfunctional “Coming soon” messaging action.
-- Patient dashboard, symptom journal, timeline, records, treatment notes and consultation-summary preview.
-- Provider directory with structured patient-experience context and anonymous review flow.
-- Research feed with publication status, source attribution and limitations; researcher matches and consent-aware enquiry drafts.
-- Anonymous community feed with communities, posts, helpful reactions, comments, saves, reports and guidelines; the FYP is seeded once with 12 marked sample media posts and sample reply threads from `assets/SamplePOSTS/`.
-- Dedicated Community application shell with a floating navigation dock, story tray, For You/Following feeds, image-led Explore masonry using local `assets/SamplePOSTS/` images and videos, live search and category filters, vertical Reels, topic follows, profiles and unified local notifications.
-- Explore supports opening sample media details, local likes and saves, share links, community discovery and join controls; sample-source and unverified-health-content labels remain visible because these files have no verified attribution.
-- Readable community paths such as `/community/w/womenshealth`, with dynamic `w/` routes generated from configured topics and existing community posts.
-- Local post creation for discussions, polls and temporary image/video previews; poll voting, post votes, nested replies, saves and community membership controls.
-- A Messages screen that explains why direct messaging is unavailable without authenticated server storage and authorization.
-- Doctor/researcher profiles, credential verification draft and administration/moderation previews.
-- Responsive floating desktop navigation and mobile bottom navigation.
-- Role selection during sign-in and browser-local remembered demo sessions.
+Open:
 
-## Prototype boundary
+```text
+http://localhost:3000
+```
 
-This is a front-end prototype. Sign-in does not validate credentials with a server; session choice, profiles, follows, posts, polls, votes, comments, community membership and notifications are stored in browser local storage and are not securely authenticated. Uploaded images and videos use temporary browser previews and do not persist as media assets. There is no database, secure messaging, encrypted health-record storage, email verification or password-reset service, official registry integration, secure credential-document upload, external literature API, real AI inference, or server-side moderation. Verification controls are interface previews only; submitting a form does not verify a professional. Do not enter real credentials or health information. No posts, messages, reviews, enquiries, or files are sent to other people or services.
+### 6. Create a production build
 
-The project documents specify production requirements for separate identity and health data, explicit/revocable sharing, verified professional claims, audit logs, encrypted records and qualified human review. Those require a backend and operational controls before this prototype can handle real users or health data.
+```bash
+npm run build
+```
 
-## Project structure
+---
 
-- index.html and styles.css provide the responsive app shell and design system.
-- src/core.js holds local demo state and shared helpers.
-- src/views.js renders public, patient, professional, research and admin views; src/community.js renders the dedicated social application.
-- src/interactions.js handles navigation, forms and local demo actions.
-- server.mjs runs the Vite development server; `npm run build` creates the production bundle.
+## 🔐 Privacy, Safety & Prototype Limitations
 
+Vericove is an evolving prototype and is not currently a production-ready medical platform.
+
+- AI-generated information is educational and is not a medical diagnosis.
+- Research matches do not establish that a publication applies to an individual.
+- AI-generated explanations may be incomplete or inaccurate.
+- The community and healthcare discovery experiences include demonstration content and interface previews.
+- Authentication, data storage, and professional verification are not equivalent to production-grade healthcare infrastructure.
+- Do not submit real health information or personal medical records to the current prototype.
+- Free-tier Gemini API usage may be subject to Google's data-use terms. Use fictional data for development and testing.
+
+Always consult a qualified healthcare professional for medical concerns.
+
+
+## 🌐 Live Project
+
+**Explore Vericove:** [https://vericove-eta.vercel.app/](https://vericove-eta.vercel.app/)
+
+**Source Code:** [https://github.com/C-Kendhe/Vericove](https://github.com/C-Kendhe/Vericove)
+
+---
+
+## 🤝 Contributing
+
+Contributions, suggestions, and ideas are welcome!
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Make your changes.
+4. Commit your changes.
+5. Open a Pull Request.
+
+For major changes, open an issue first to discuss what you would like to improve.
+
+
+<p align="center">
+  <strong>Vericove — Because better health conversations start with better information.</strong>
+  <br><br>
+  If you like this project, consider giving it a ⭐ on GitHub!
+</p>
