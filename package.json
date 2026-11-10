@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node server.mjs",
+    "dev:vercel": "vercel dev",
     "start": "node server.mjs",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4173"
